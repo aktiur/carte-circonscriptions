@@ -1,0 +1,21 @@
+{
+  "name": "melencarte",
+  "version": "1.0.0",
+  "description": "CONTOURS DES CIRCONSCRIPTIONS LEGISLATIVES Version 1.0.0 Publié le 18/06/2012 par Toxicode http://www.toxicode.fr/circonscriptions Sous licence ODbL : http://opendatacommons.org/licenses/odbl/",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aktiur/melencarte.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/aktiur/melencarte/issues"
+  },
+  "homepage": "https://github.com/aktiur/melencarte#readme"
+}
