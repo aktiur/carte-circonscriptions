@@ -20,7 +20,7 @@
     .attr("width", width)
     .attr("height", height);
 
-  const choices = ['MÉLENCHON', 'MACRON', 'LE PEN', 'FILLON'];
+  const choices = ['MÉLENCHON', 'MACRON', 'LE PEN', 'FILLON', 'rang'];
 
 
   select.selectAll('option').data(choices)
@@ -33,7 +33,8 @@
     'MÉLENCHON': d3.scaleSequential(d3.interpolateReds).domain([0, 0.5]),
     'MACRON': d3.scaleSequential(d3.interpolateOranges).domain([0, 0.5]),
     'LE PEN': d3.scaleSequential(d3.interpolateGreys).domain([0, 0.5]),
-    'FILLON': d3.scaleSequential(d3.interpolatePurples).domain([0, 0.5])
+    'FILLON': d3.scaleSequential(d3.interpolatePurples).domain([0, 0.5]),
+    'rang': d3.scaleSequential(d3.interpolateReds).domain([5, 1])
   };
 
   const projection = d3.geoAlbers()
