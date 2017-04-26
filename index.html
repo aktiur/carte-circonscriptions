@@ -20,21 +20,29 @@
     .attr("width", width)
     .attr("height", height);
 
-  const choices = ['MÉLENCHON', 'MACRON', 'LE PEN', 'FILLON', 'rang'];
+  const choices = [
+    ['MÉLENCHON', 'Mélenchon'],
+    ['MACRON', 'Macron'],
+    ['LE PEN', 'Le Pen'],
+    ['FILLON', 'Fillon'],
+    ['rang', 'Rang de Mélenchon'],
+    ['qualifie', '> 12,5 % des inscrits']
+  ];
 
 
   select.selectAll('option').data(choices)
     .enter()
     .append('option')
-    .attr('value', function(d) { return d;})
-    .text(function(d) { return d;});
+    .attr('value', function(d) { return d[0];})
+    .text(function(d) { return d[1];});
 
   const colors = {
     'MÉLENCHON': d3.scaleSequential(d3.interpolateReds).domain([0, 0.5]),
     'MACRON': d3.scaleSequential(d3.interpolateOranges).domain([0, 0.5]),
     'LE PEN': d3.scaleSequential(d3.interpolateGreys).domain([0, 0.5]),
     'FILLON': d3.scaleSequential(d3.interpolatePurples).domain([0, 0.5]),
-    'rang': d3.scaleSequential(d3.interpolateReds).domain([5, 1])
+    'rang': d3.scaleSequential(d3.interpolateReds).domain([5, 1]),
+    'qualifie': d3.scaleOrdinal(d3.schemeDark2).domain(true, false)
   };
 
   const projection = d3.geoAlbers()
