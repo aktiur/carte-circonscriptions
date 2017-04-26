@@ -47,13 +47,16 @@
     .projection(projection);
 
   function draw(data, choice) {
-    const circos = svg.selectAll('.circos').data(data);
+    const t = d3.transition().duration(750);
+
+    const circos = svg.selectAll('.circos').data(data, function(d) { return d.properties.ID; });
     // Enter
     circos.enter().append('path')
       .attr('class', 'circos')
       .attr('d', path)
       // UPDATE
       .merge(circos)
+      .transition(t)
       .attr('fill', function (d) {
         return colors[choice](d.properties.votes[choice]);
       });
