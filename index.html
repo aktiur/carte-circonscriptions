@@ -3,22 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <title>Circonscriptions électorales</title>
-    <style>
-    </style>
+    <link rel="stylesheet" href="//rawgithub.com/Caged/d3-tip/master/examples/example-styles.css">
 </head>
 <body>
 <script src="//d3js.org/d3.v4.min.js" charset="utf-8"></script>
 <script src="//d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.js"></script>
 <script src="//d3js.org/topojson.v3.js"></script>
 
 <select></select><br>
 <script>
   const select = d3.select("select");
 
+  const tip = d3.tip().attr('class', 'd3-tip').html(function (d) {
+    return `${d.properties.num_circ}${d.properties.num_circ === '1' ? 'ère' : 'ème'} circonscription, ${d.properties.nom_dpt}`
+  });
+
   const width = 960, height = 1160;
   const svg = d3.select("body").append("svg")
     .attr("width", width)
-    .attr("height", height);
+    .attr("height", height)
+    .call(tip);
 
   const choices = [
     ['MÉLENCHON', 'Mélenchon'],
@@ -42,7 +47,7 @@
     'LE PEN': d3.scaleSequential(d3.interpolateGreys).domain([0, 0.5]),
     'FILLON': d3.scaleSequential(d3.interpolatePurples).domain([0, 0.5]),
     'rang': d3.scaleSequential(d3.interpolateReds).domain([5, 1]),
-    'qualifie': d3.scaleOrdinal(d3.schemeDark2).domain(true, false)
+    'qualifie': d3.scaleOrdinal(["#ff5943", "#e2e2e2"]).domain(true, false)
   };
 
   const projection = d3.geoAlbers()
@@ -55,6 +60,7 @@
   const path = d3.geoPath()
     .projection(projection);
 
+
   function draw(data, choice) {
     const t = d3.transition().duration(750);
 
@@ -63,6 +69,8 @@
     circos.enter().append('path')
       .attr('class', 'circos')
       .attr('d', path)
+      .on('mouseover', tip.show)
+      .on('mouseout', tip.hide)
       // UPDATE
       .merge(circos)
       .transition(t)
@@ -72,7 +80,6 @@
   }
 
   d3.json("data/circos_exprimes.json", function (error, topology) {
-    console.log(topology);
     if (error) return console.error(error);
 
     window.topology = topology;
