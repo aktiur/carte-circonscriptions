@@ -6,9 +6,10 @@
     <link rel="stylesheet" href="//rawgithub.com/Caged/d3-tip/master/examples/example-styles.css">
     <style>
         #selector {
-            margin: auto;
+            margin: 20px auto;
             max-width: 300px;
         }
+
         #selector select {
             display: block;
             width: 100%;
@@ -20,17 +21,36 @@
 
         #hexagone {
             width: 960px;
+            height: 950px;
         }
 
         #details div {
-            margin: 1em 10px;
+            margin: 0 10px;
             padding: 10px;
             border: 1px solid black;
         }
+
+        svg, g {
+            pointer-events: none;
+        }
+
+        path {
+            pointer-events: all !important;
+        }
+
+        .d3-tip {
+            z-index: 1000;
+        }
     </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
+          integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
+          crossorigin=""/>
 </head>
 <body>
 <script src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.js"></script>
+<script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"
+        integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
+        crossorigin=""></script>
 <script src="//d3js.org/d3.v4.min.js" charset="utf-8"></script>
 <script src="//d3js.org/d3-scale-chromatic.v1.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.js"></script>
@@ -51,11 +71,13 @@
       return nomCirco(d);
     });
 
+  const map = new L.Map("hexagone", {center: [46.72, -2], zoom: 5})
+    .addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
+
   const width = 960, height = 950;
-  const hexagone = d3.select("#hexagone").append("svg")
-    .attr("width", width)
-    .attr("height", height)
+  const svg = d3.select(map.getPanes().overlayPane).append("svg")
     .call(tip);
+  const hexagone = svg.append('g').attr('class', 'leaflet-zoom-hide');
 
   // graph détails
   const gWidth = 500;
@@ -77,7 +99,7 @@
 
   const echelle = results.append('g')
     .attr('class', 'axis axis--x')
-    .attr('transform', 'translate(0,'+ gHeight + ')');
+    .attr('transform', 'translate(0,' + gHeight + ')');
 
   const x = d3.scaleLinear().rangeRound([0, gWidth]);
   const y = d3.scaleBand().rangeRound([0, gHeight]).padding(0.1);
@@ -126,21 +148,10 @@
     'HAMON': "#e0003c",
     'LASSALLE': "#ff9632",
     'LE PEN': "#2f3e4b",
-    'MACRON': "#FFF",
     'MÉLENCHON': "#ff3f19",
     'POUTOU': "#ff1f17",
     'MACRON': '#ffe037'
-  }
-
-  const projection = d3.geoAlbers()
-    .center([0, 46.72])
-    .rotate([-2, 0])
-    .parallels([40, 50])
-    .scale(6000)
-    .translate([width / 2, height / 2]);
-
-  const path = d3.geoPath()
-    .projection(projection);
+  };
 
   function nomCirco(d) {
     return `${d.properties.nom_dpt}, ${d.properties.num_circ}${d.properties.num_circ === '1' ? 'ère' : 'ème'} circonscription`;
@@ -151,10 +162,16 @@
 
     const votes = feature.properties.votes;
 
-    const candidats = Object.keys(votes).sort(function(a, b) {return votes[a] - votes[b];}).reverse().slice(0,5);
-    const scoreMax = d3.max(candidats.map(function(c) { return votes[c];}));
+    const candidats = Object.keys(votes).sort(function (a, b) {
+      return votes[a] - votes[b];
+    }).reverse().slice(0, 5);
+    const scoreMax = d3.max(candidats.map(function (c) {
+      return votes[c];
+    }));
 
-    const data = candidats.map(function(c) { return {candidat: c, score: votes[c]};});
+    const data = candidats.map(function (c) {
+      return {candidat: c, score: votes[c]};
+    });
 
     y.domain(candidats);
     x.domain([0, Math.max(0.25, scoreMax)]);
@@ -162,36 +179,66 @@
     labels.call(d3.axisLeft(y));
     echelle.call(d3.axisBottom(x).ticks(5, '%'));
 
-    const bars = results.selectAll('.bar').data(data, function(d) { return d.candidat; });
+    const bars = results.selectAll('.bar').data(data, function (d) {
+      return d.candidat;
+    });
 
     bars.enter()
       .append('rect')
       .attr('class', 'bar')
       .attr('x', 0)
       .merge(bars)
-      .attr('y', function(d) { return y(d.candidat); })
+      .attr('y', function (d) {
+        return y(d.candidat);
+      })
       .attr('height', y.bandwidth())
-      .attr('width', function(d) { return x(d.score); })
-      .attr('fill', function(d) { return barColors[d.candidat];});
+      .attr('width', function (d) {
+        return x(d.score);
+      })
+      .attr('fill', function (d) {
+        return barColors[d.candidat];
+      });
 
     bars.exit().remove();
   }
 
-  function draw(data, choice) {
+  function projectPoint(x, y) {
+    const point = map.latLngToLayerPoint(new L.LatLng(y, x));
+    this.stream.point(point.x, point.y);
+  }
+
+  const transform = d3.geoTransform({point: projectPoint}),
+    path = d3.geoPath().projection(transform);
+
+  function draw(collection, choice) {
+    console.log('draw');
     const t = d3.transition().duration(750);
 
-    const circos = hexagone.selectAll('.circos').data(data, function (d) {
+    const circos = hexagone.selectAll('.circos').data(collection.features, function (d) {
       return d.properties.ID;
     });
+
+    const bounds = path.bounds(collection),
+      topLeft = bounds[0],
+      bottomRight = bounds[1];
+
+    svg
+      .attr("width", bottomRight[0] - topLeft[0])
+      .attr("height", bottomRight[1] - topLeft[1])
+      .style("left", topLeft[0]+'px')
+      .style("top", topLeft[1]+'px');
+
+    hexagone.attr('transform', "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+
     // Enter
     circos.enter().append('path')
       .attr('class', 'circos')
-      .attr('d', path)
       .on('mouseover.tip', tip.show)
       .on('mouseout.tip', tip.hide)
       .on('mouseover.details', showDetails)
       // UPDATE
       .merge(circos)
+      .attr('d', path)
       .transition(t)
       .attr('fill', function (d) {
         return colorScales[choice](_.get(d.properties, choice));
@@ -203,13 +250,17 @@
 
     window.topology = topology;
 
-    const features = topojson.feature(topology, topology.objects.circos).features;
+    const collection = topojson.feature(topology, topology.objects.circos);
 
-    draw(features, 'votes.MÉLENCHON');
+    draw(collection, 'votes.MÉLENCHON');
 
-    select.on('change', function () {
-      draw(features, select.node().value);
-    })
+    function redraw() {
+      draw(collection, select.node().value);
+    }
+
+    select.on('change', redraw);
+    map.on('viewreset', redraw);
+    map.on('zoom', redraw);
   })
 </script>
 </body>
