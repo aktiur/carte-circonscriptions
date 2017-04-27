@@ -89,7 +89,8 @@
     ['votes.FILLON', 'Fillon'],
     ['votes.HAMON', 'Hamon'],
     ['rang', 'Rang de Mélenchon'],
-    ['qualifie', '> 12,5 % des inscrits']
+    ['qualifie', '> 12,5 % des inscrits pour Mélenchon'],
+    ['force', 'Score de Mélenchon (en dizaines de %)']
   ];
 
 
@@ -103,6 +104,8 @@
       return d[1];
     });
 
+  const sc = d3.interpolateReds;
+
   const colorScales = {
     'votes.MÉLENCHON': d3.scaleSequential(d3.interpolateReds).domain([0, 0.5]),
     'votes.MACRON': d3.scaleSequential(d3.interpolateOranges).domain([0, 0.5]),
@@ -110,7 +113,8 @@
     'votes.FILLON': d3.scaleSequential(d3.interpolatePurples).domain([0, 0.5]),
     'votes.HAMON': d3.scaleSequential(d3.interpolateReds).domain([0, 0.5]),
     'rang': d3.scaleSequential(d3.interpolateReds).domain([5, 1]),
-    'qualifie': d3.scaleOrdinal(["#ff5943", "#e2e2e2"]).domain(true, false)
+    'qualifie': d3.scaleOrdinal(["#ff5943", "#e2e2e2"]).domain(true, false),
+    'force': d3.scaleOrdinal([sc(0), sc(.33), sc(.66), sc(1)]).domain(['-10%', '10-20%', '20-30%', '+30%'])
   };
 
   const barColors = {
