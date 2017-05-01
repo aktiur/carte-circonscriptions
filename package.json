@@ -5,14 +5,17 @@
   "main": "src/main.js",
   "dependencies": {
     "babel": "^6.23.0",
+    "d3-array": "^1.2.0",
     "d3-axis": "^1.0.6",
     "d3-geo": "^1.6.3",
     "d3-scale": "^1.0.5",
     "d3-scale-chromatic": "^1.1.1",
     "d3-selection": "^1.0.5",
     "d3-transition": "^1.0.4",
+    "d3-zoom": "^1.1.4",
     "lodash": "^4.17.4",
-    "normalize.css": "^6.0.0"
+    "normalize.css": "^6.0.0",
+    "topojson": "^3.0.0"
   },
   "devDependencies": {
     "babel-plugin-external-helpers": "^6.22.0",
@@ -27,8 +30,7 @@
     "rollup-plugin-livereload": "^0.4.0",
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-serve": "^0.3.0",
-    "rollup-watch": "^3.2.2",
-    "topojson": "^3.0.0"
+    "rollup-watch": "^3.2.2"
   },
   "scripts": {
     "build": "rollup -c",

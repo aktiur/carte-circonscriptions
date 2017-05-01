@@ -1,0 +1,24 @@
+.map {
+    position: relative;
+    display: flex;
+}
+
+.map .reset-button {
+    cursor: pointer;
+    font-family: FontAwesome;
+    color: #0098b6;
+    font-size: 18px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.map .insets {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}

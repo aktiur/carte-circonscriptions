@@ -1,6 +1,11 @@
-.app {
+#app {
     min-height: 100%;
-    display: grid;
-    grid-template-rows: 50px 500px 1fr 50px;
-    grid-template-columns: 60% 40%;
+}
+
+#app .content {
+    display: flex;
+}
+
+.map {
+    border-right: 1px solid black;
 }
