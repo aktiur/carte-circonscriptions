@@ -22,3 +22,22 @@
     flex-direction: column;
     justify-content: space-around;
 }
+
+.map .fe {
+    display: flex;
+    justify-content: space-around;
+    padding-bottom: 10px;
+}
+
+.map .circo {
+    cursor: pointer;
+}
+
+.map .fe text {
+    font-family: sans-serif;
+    text-anchor: middle;
+    fill: #000;
+    stroke: #FFF;
+    font-size: 25px;
+    font-weight: bold;
+}

@@ -3,6 +3,7 @@ import {extent} from 'd3-array';
 import {
   interpolateReds, interpolatePurples, interpolateOranges, interpolateGreys, schemeReds, schemeSet1
 } from 'd3-scale-chromatic';
+import {legendColor} from 'd3-svg-legend';
 
 /* une métrique définit :
  *
@@ -23,6 +24,10 @@ class VoteMetric {
     return d.properties.votes[this.key] / d.properties.totaux.exprimes;
   }
 
+  get description() {
+    return `Part des votes exprimés pour ${this.label}`;
+  }
+
   init(data) {
     const domain = extent(data.map(d => this._getValue(d)));
     this.scale.domain(domain);
@@ -32,8 +37,11 @@ class VoteMetric {
     return this.scale(this._getValue(d));
   }
 
-  setUpLegend(elem) {
-
+  getLegend() {
+    return legendColor()
+      .scale(this.scale)
+      .title(this.description)
+      .labelFormat('.1%');
   }
 }
 
@@ -83,23 +91,28 @@ export const simpleMetrics = [
     getColor(d) {
       return this.scale(orderOf(d.properties.votes, 'MÉLENCHON'));
     },
-    setupLegend(elem) {
+    getLegend() {
+      return legendColor()
+        .scale(this.scale)
+        .title(this.label);
     }
   },
   {
     key: 'qualifie',
     label: '> 12,5 % des inscrits',
-    scale: scaleOrdinal(["#ff5943", "#e2e2e2"]).domain(true, false),
+    scale: scaleOrdinal().range(["#ff5943", "#e2e2e2"]).domain('O', 'N'),
     init() {
     },
     getColor(d) {
       const voteMelenchon = d.properties.votes['MÉLENCHON'];
       const inscrits = d.properties.totaux.inscrits;
 
-      return this.scale((voteMelenchon / inscrits) >= .125);
+      return this.scale((voteMelenchon / inscrits) >= .125 ? 'O' : 'N');
     },
-    setUpLegend() {
-
+    getLegend() {
+      return legendColor()
+        .scale(this.scale)
+        .title('La barre des 12,5 % des inscrits a-t-elle été dépassée ?');
     }
   },
   {
@@ -111,17 +124,29 @@ export const simpleMetrics = [
     getColor(d)
     {
       return this.scale(d.properties.votes['MÉLENCHON'] / d.properties.totaux.exprimes);
+    },
+    getLegend() {
+      return legendColor()
+        .scale(this.scale)
+        .title('Score de Mélenchon (en part des exprimés)')
+        .labels(['- de 10 %', '10 - 20 %', '20 - 30 %', '+ de 30 %']);
     }
   },
   {
     key: 'candidature',
     label: 'Candidatures FI',
-    scale: scaleOrdinal(schemeSet1).domain('M', 'F', ''),
+    scale: scaleOrdinal().range(schemeSet1.slice(0, 3)).domain('M', 'F', ''),
     init() {
 
     },
     getColor(d) {
       return this.scale(d.properties.candidature.genre);
+    },
+    getLegend() {
+      return legendColor()
+        .scale(this.scale)
+        .title('Présence et genre du titulaire')
+        .labels(['Masculin', 'Féminin', 'Sans candidat']);
     }
   }
 ];

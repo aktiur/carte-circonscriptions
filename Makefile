@@ -1,6 +1,8 @@
 SHELL := /bin/bash
 PATH := node_modules/.bin:$(PATH)
 
+CANDIDATS_LINK = https://docs.google.com/spreadsheets/d/1W5erOvpmUPbqaLjVztkXKnSTkfbfcQfk0EVNLZz5qZw/export?format=csv
+
 DROMCOM = guadeloupe martinique guyane reunion mayotte
 
 # à ajouter plus tard : nouvelle-caledonie polynesie-francaise saint-pierre-et-miquelon wallis-et-futuna saint-martin-saint-barthelemy
@@ -16,8 +18,6 @@ FEATURES_FILES = $(addsuffix .ndjson,$(addprefix $(FEATURES_DIR)/,$(CIRCO_GROUPS
 DROMCOM_FEATURES_FILES = $(addsuffix .ndjson,$(addprefix $(FEATURES_DIR)/,$(DROMCOM)))
 
 GEO_SRC = raw/france-circonscriptions-legislatives-2012.json
-
-node_path = node_modules/.bin/
 
 $(FEATURES_DIR)/guadeloupe.ndjson: CODE = ZA
 $(FEATURES_DIR)/martinique.ndjson: CODE = ZB
@@ -102,6 +102,7 @@ data/candidats.ndjson: raw/conso.csv
 	| ndjson-map 'd.departement=d.departement in $(CONSO_DEP_MAPPING) ? $(CONSO_DEP_MAPPING)[d.departement] : d.departement, d' \
 	| ndjson-map 'd.departement=("00"+d.departement).slice(-2), d' \
 	| ndjson-map 'd.id=d.departement + ("000" + d.circo).slice(-3), d' \
+	| ndjson-map 'd.genre = (d.genre === "E" ? "" : d.genre), d' \
 	| ndjson-map -r _=lodash '_.pick(d, ["id", "genre", "titulaire_nom_complet", "titulaire_email", "suppleant_nom_complet", "suppleant_email"])' > $@
 
 data/2017_par_circo.csv: data/2017_cleaned.csv
@@ -110,5 +111,8 @@ data/2017_par_circo.csv: data/2017_cleaned.csv
 data/2017_cleaned.csv: raw/PR17_BVot_T1_FE.txt
 	python scripts/clean_2017.py $< > $@
 
+download:
+	wget -O raw/tmp ${CANDIDATS_LINK}
+	if cmp raw/tmp raw/conso.csv; then rm raw/tmp; else cp raw/tmp raw/conso.csv; fi
 clean:
 	rm -rf data/

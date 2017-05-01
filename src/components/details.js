@@ -1,6 +1,6 @@
 import {scaleLinear, scaleBand} from 'd3-scale';
 import {axisLeft, axisBottom} from 'd3-axis';
-import {max} from 'd3-array';
+import {percentFormat} from '../config';
 
 import './details.css';
 
@@ -15,11 +15,12 @@ const barColors = {
   'LE PEN': "#2f3e4b",
   'MÉLENCHON': "#ff3f19",
   'POUTOU': "#ff1f17",
-  'MACRON': '#ffe037'
+  'MACRON': '#ffc600'
 };
 
 const width = 500, height = 400;
 const labelsWidth = 100, scaleHeight = 20;
+const rightMargin = 20;
 
 let draw = null;
 
@@ -46,7 +47,7 @@ export default function details(elem) {
     .text('Cliquez sur une circonscription pour obtenir des détails');
 
   const graph = elem.append('svg')
-    .attr('width', width + labelsWidth)
+    .attr('width', width + labelsWidth + rightMargin)
     .attr('height', height + scaleHeight);
 
   const results = graph.append('g')
@@ -70,20 +71,18 @@ export default function details(elem) {
     title.text(nomCirco(feature));
 
     const votes = feature.properties.votes;
+    const exprimes = feature.properties.totaux.exprimes;
 
     const candidats = Object.keys(votes).sort(function (a, b) {
       return votes[a] - votes[b];
     }).reverse().slice(0, 5);
-    const scoreMax = max(candidats.map(function (c) {
-      return votes[c];
-    }));
 
     const data = candidats.map(function (c) {
-      return {candidat: c, score: votes[c]};
+      return {candidat: c, score: votes[c]/exprimes};
     });
 
     y.domain(candidats);
-    x.domain([0, Math.max(0.25, scoreMax)]);
+    x.domain([0, Math.max(0.25, data[0].score)]);
 
     labels.call(axisLeft(y));
     scale.call(axisBottom(x).ticks(5, '%'));
@@ -109,6 +108,21 @@ export default function details(elem) {
       });
 
     bars.exit().remove();
+
+    const figures = results.selectAll('.figure').data(data, function(d) {
+      return d.candidat;
+    });
+
+    figures.enter()
+      .append('text')
+      .attr('class', 'figure')
+      .attr('dx', 10)
+      .attr('dy', '.3em')
+      .merge(figures)
+      .attr('y', d => y(d.candidat) + y.bandwidth() / 2)
+      .text(d => percentFormat(d.score));
+
+    figures.exit().remove();
 
     candidature.html(resumeCandidature(feature.properties.candidature));
   };

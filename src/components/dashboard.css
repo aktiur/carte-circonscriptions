@@ -6,6 +6,6 @@
     display: flex;
 }
 
-.map {
-    border-right: 1px solid black;
+.content .legend {
+    padding: auto;
 }

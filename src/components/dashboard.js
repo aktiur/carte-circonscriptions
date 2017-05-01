@@ -2,6 +2,7 @@ import './dashboard.css';
 import selector from './selector';
 import map from './map';
 import details from './details';
+import legend from './legend';
 
 function dashboard(root) {
   root.append('div')
@@ -12,8 +13,14 @@ function dashboard(root) {
   content.append('div')
     .call(map);
 
-  content.append('div')
+  const sidebar = content.append('div');
+
+  sidebar.append('div')
+    .call(legend);
+
+  sidebar.append('div')
     .call(details);
+
 }
 
 export default dashboard;

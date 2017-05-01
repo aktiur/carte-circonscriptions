@@ -2,13 +2,15 @@ import {transition} from 'd3-transition';
 import {geoPath, geoAlbers} from 'd3-geo';
 import {zoom, zoomIdentity} from 'd3-zoom';
 import {event} from 'd3-selection';
+import {ascending} from 'd3-array';
 
 import topology from '../data/topo.json';
+import supp from '../data/supp.json';
+
 import {feature} from 'topojson';
 
 import {addListener} from './selector';
 import {showDetails} from './details';
-import metrics from '../metrics';
 import insetConfig from '../insets';
 
 import './map.css';
@@ -18,7 +20,9 @@ const width = 900, height = 900;
 export default function (elem) {
   elem.attr('class', 'map');
 
-  const svg = elem.append('svg')
+  const hex_fe = elem.append('div').attr('class', 'hex_fe');
+
+  const svg = hex_fe.append('svg')
     .attr('width', width)
     .attr('height', height);
 
@@ -36,8 +40,9 @@ export default function (elem) {
 
   svg.call(mapZoom);
 
-  const insets = elem.append('div').call(addInsets);
+  elem.append('div').call(addInsets);
 
+  hex_fe.append('div').call(fe);
 
   elem.append('button')
     .attr('class', 'reset-button fa fa-refresh')
@@ -53,7 +58,7 @@ function hexagone(elem, t) {
   // const departementsFeatures = feature(topology, topology.objects.departements);
 
   const projection = geoAlbers()
-    .center([0, 46.72])
+    .center([0, 46.57723270181815])
     .rotate([-2, 0])
     .parallels([40, 50])
     .scale(5500)
@@ -72,7 +77,7 @@ function hexagone(elem, t) {
   function draw(metric) {
     const t = transition('hexagone').duration(750);
 
-    let circos = elem.selectAll('.circos').data(hexagoneFeatures.features, function (d) {
+    let circos = elem.selectAll('.circo').data(hexagoneFeatures.features, function (d) {
       return d.id;
     });
 
@@ -80,7 +85,7 @@ function hexagone(elem, t) {
 
     circos = circos.enter()
       .append('path')
-      .attr('class', 'circos')
+      .attr('class', 'circo')
       .attr('d', path)
       .merge(circos)
       .on('click', showDetails)
@@ -88,7 +93,6 @@ function hexagone(elem, t) {
       .attr('fill', d => metric.getColor(d));
   }
 
-  draw(metrics[0]);
   addListener(draw);
 }
 
@@ -120,19 +124,61 @@ function addInsets(elem) {
   function draw(metric) {
     const t = transition('insets').duration(750);
 
-    let paths = insetSvg.selectAll('path')
+    let paths = insetSvg.selectAll('.circo')
       .data((d) => d.feature.features.map(f => Object.assign({}, f, {parent: d})), (d) => d.id);
 
     paths = paths.enter()
       .append('path')
-      .attr('class', 'circos')
+      .attr('class', 'circo')
       .attr('d', (d) => d.parent.path(d))
-      .merge(paths)
       .on('click', showDetails)
+      .merge(paths)
       .transition(t)
       .attr('fill', d => metric.getColor(d));
   }
 
-  draw(metrics[0]);
+  addListener(draw);
+}
+
+function fe(elem) {
+  const circosFE = supp
+    .filter(d => d.departement === 'ZZ')
+    .sort((a, b) => ascending(a.circo, b.circo))
+    .map(d => ({properties: d}));
+
+  elem.attr('class', 'fe');
+
+  const dimension = 70;
+
+  const feSVGs = elem.selectAll('.fe').data(circosFE)
+    .enter()
+    .append('div')
+    .attr('class', d => `fe fe-${d.properties.circo}`)
+    .append('svg')
+    .attr('width', dimension)
+    .attr('height', dimension);
+
+  const g = feSVGs.append('g')
+    .attr('class', 'circo')
+    .attr('transform', `translate(${dimension/2},${dimension/2})`)
+    .on('click', showDetails);
+
+  const circles = g
+    .append('circle')
+    .attr('r', dimension / 2);
+
+  g
+    .append('text')
+    .attr('dy', '.3em')
+    .text(d => d.properties.circo.toString());
+
+  function draw(metric) {
+    const t = transition('insets').duration(750);
+
+    circles
+      .transition(t)
+      .attr('fill', d => metric.getColor(d));
+  }
+
   addListener(draw);
 }

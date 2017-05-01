@@ -1,5 +1,3 @@
-import {event} from 'd3-selection';
-
 import metrics from '../metrics';
 
 import './selector.css';
@@ -28,15 +26,19 @@ export default function (elem) {
 }
 
 const listeners = [];
+let last = metrics[0];
 
 function emit(d) {
-  for(let listener of listeners) {
+  last = d;
+
+  for (let listener of listeners) {
     listener(d);
   }
 }
 
 export function addListener(listener) {
   listeners.push(listener);
+  listener(last);
 }
 
 export function removeListener(listener) {

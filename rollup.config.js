@@ -5,21 +5,28 @@ import babel from 'rollup-plugin-babel';
 import serve from 'rollup-plugin-serve';
 import livereload from 'rollup-plugin-livereload';
 
+const plugins = [
+  css({
+    output: 'dist/style.css'
+  }),
+  json(),
+  resolve(),
+  babel({
+    exclude: 'node_modules/**'
+  }),
+];
+
+if (process.env.serve === 'true') {
+  plugins.push(
+    serve('dist'),
+    livereload()
+  );
+}
+
 export default {
   entry: 'src/main.js',
   format: 'iife',
-  plugins: [
-    css({
-      output: 'dist/style.css'
-    }),
-    json(),
-    resolve(),
-   babel({
-     exclude: 'node_modules/**'
-   }),
-   serve('dist'),
-   livereload()
-  ],
+  plugins,
   dest: 'dist/bundle.js',
   moduleName: 'melencarte'
 };
