@@ -1,3 +1,7 @@
+#!/bin/bash
+
+. .env/bin/activate
+
 # let's get last version of csv
 wget -O raw/tmp ${URL}
 if cmp raw/tmp raw/conso.csv; then
@@ -14,4 +18,4 @@ make
 npm run build
 
 # let's copy dist directory to destination
-cp -f dist/* ${DEST}
+cp -rf dist/* ${DEST}
