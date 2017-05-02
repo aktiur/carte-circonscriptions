@@ -100,7 +100,7 @@ data/candidats.ndjson: raw/conso.csv
 	| ndjson-map 'd.departement=d.departement in $(CONSO_DEP_MAPPING) ? $(CONSO_DEP_MAPPING)[d.departement] : d.departement, d' \
 	| ndjson-map 'd.departement=("00"+d.departement).slice(-2), d' \
 	| ndjson-map 'd.id=d.departement + ("000" + d.circo).slice(-3), d' \
-	| ndjson-map 'd.genre = (d.genre === "E" ? "" : d.genre), d' \
+	| ndjson-map 'd.genre = (["M", "F"].includes(d.genre.trim()) ? d.genre.trim() : ""), d' \
 	| ndjson-map -r _=lodash '_.pick(d, ["id", "genre", "titulaire_nom_complet", "titulaire_email", "suppleant_nom_complet", "suppleant_email"])' > $@
 
 data/2017_par_circo.csv: data/2017_cleaned.csv
