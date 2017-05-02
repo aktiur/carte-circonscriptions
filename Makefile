@@ -1,8 +1,6 @@
 SHELL := /bin/bash
 PATH := node_modules/.bin:$(PATH)
 
-CANDIDATS_LINK = https://docs.google.com/spreadsheets/d/1W5erOvpmUPbqaLjVztkXKnSTkfbfcQfk0EVNLZz5qZw/export?format=csv
-
 DROMCOM = guadeloupe martinique guyane reunion mayotte
 
 # à ajouter plus tard : nouvelle-caledonie polynesie-francaise saint-pierre-et-miquelon wallis-et-futuna saint-martin-saint-barthelemy
@@ -111,8 +109,5 @@ data/2017_par_circo.csv: data/2017_cleaned.csv
 data/2017_cleaned.csv: raw/PR17_BVot_T1_FE.txt
 	python scripts/clean_2017.py $< > $@
 
-download:
-	wget -O raw/tmp ${CANDIDATS_LINK}
-	if cmp raw/tmp raw/conso.csv; then rm raw/tmp; else cp raw/tmp raw/conso.csv; fi
 clean:
 	rm -rf data/
