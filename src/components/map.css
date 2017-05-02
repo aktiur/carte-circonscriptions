@@ -17,6 +17,11 @@
     box-shadow: none;
 }
 
+.map .contours {
+    fill: none;
+    stroke: black;
+}
+
 .map .insets {
     display: flex;
     flex-direction: column;

@@ -7,7 +7,7 @@ import {ascending} from 'd3-array';
 import topology from '../data/topo.json';
 import supp from '../data/supp.json';
 
-import {feature} from 'topojson';
+import {feature, mesh} from 'topojson';
 
 import {addListener} from './selector';
 import {showDetails} from './details';
@@ -16,6 +16,7 @@ import insetConfig from '../insets';
 import './map.css';
 
 const width = 900, height = 900;
+const contoursWidth = 1;
 
 export default function (elem) {
   elem.attr('class', 'map');
@@ -30,10 +31,12 @@ export default function (elem) {
 
   function zoomed() {
     hexagoneElem.attr('transform', event.transform);
+    hexagoneElem.select('.contours').selectAll('path').attr('stroke-width', contoursWidth / event.transform.k);
   }
 
   const mapZoom = zoom()
     .scaleExtent([1, 10])
+    .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 
   const t = transition().duration(250);
@@ -55,7 +58,7 @@ function hexagone(elem, t) {
   elem.attr('class', 'hexagone');
 
   const hexagoneFeatures = feature(topology, topology.objects.hexagone);
-  // const departementsFeatures = feature(topology, topology.objects.departements);
+  const departementsFeatures = feature(topology, topology.objects.departements);
 
   const projection = geoAlbers()
     .center([0, 46.57723270181815])
@@ -67,17 +70,18 @@ function hexagone(elem, t) {
   const path = geoPath()
     .projection(projection);
 
-  // elem.append('g').attr('class', 'departements')
-  //   .append('path')
-  //   .datum(departementsFeatures)
-  //   .attr('d', path)
-  //   .attr('fill', 'none')
-  //   .attr('stroke', '#000');
+  const circoLayer = elem.append('g').attr('class', 'circo-layer');
+
+  elem.append('g').attr('class', 'contours')
+    .append('path')
+    .datum(departementsFeatures)
+    .attr('d', path)
+    .attr('stroke-width', contoursWidth);
 
   function draw(metric) {
     const t = transition('hexagone').duration(750);
 
-    let circos = elem.selectAll('.circo').data(hexagoneFeatures.features, function (d) {
+    let circos = circoLayer.selectAll('.circo').data(hexagoneFeatures.features, function (d) {
       return d.id;
     });
 
@@ -101,6 +105,7 @@ function addInsets(elem) {
 
   for (let territoire of insetConfig) {
     territoire.feature = feature(topology, topology.objects[territoire.key]);
+    territoire.mesh = mesh(topology, topology.objects[territoire.key], (a, b) => a === b);
     territoire.projection = geoAlbers()
       .center([0, territoire.centroid[1]])
       .rotate([-territoire.centroid[0], 0])
@@ -120,11 +125,18 @@ function addInsets(elem) {
     .attr('width', d => d.dimensions[0])
     .attr('height', d => d.dimensions[1]);
 
+  const circosG = insetSvg.append('g');
+
+  insetSvg.append('path')
+    .datum(d => Object.assign({}, d.mesh, {parent: d}))
+    .attr('class', 'contours')
+    .attr('d', d => d.parent.path(d))
+    .attr('stroke-width', contoursWidth);
 
   function draw(metric) {
     const t = transition('insets').duration(750);
 
-    let paths = insetSvg.selectAll('.circo')
+    let paths = circosG.selectAll('.circo')
       .data((d) => d.feature.features.map(f => Object.assign({}, f, {parent: d})), (d) => d.id);
 
     paths = paths.enter()
@@ -160,12 +172,14 @@ function fe(elem) {
 
   const g = feSVGs.append('g')
     .attr('class', 'circo')
-    .attr('transform', `translate(${dimension/2},${dimension/2})`)
+    .attr('transform', `translate(${dimension / 2},${dimension / 2})`)
     .on('click', showDetails);
 
   const circles = g
     .append('circle')
-    .attr('r', dimension / 2);
+    .attr('stroke-width', contoursWidth)
+    .attr('stroke', 'black')
+    .attr('r', 0.95 * (dimension / 2));
 
   g
     .append('text')

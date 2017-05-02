@@ -3,8 +3,8 @@ export default [
     key: 'guadeloupe',
     centroid: [-61.54397090976908, 16.200393109563265],
     parallels: [15.867518, 16.510713],
-    scale: 10000,
-    dimensions: [120, 100]
+    scale: 9600,
+    dimensions: [120, 120]
   },
   {
     key: 'martinique',
@@ -24,8 +24,8 @@ export default [
     key: 'reunion',
     centroid: [55.53222519230052, -21.13311165108935],
     parallels: [-21.388065, -20.871726],
-    scale: 12000,
-    dimensions: [120, 100]
+    scale: 11500,
+    dimensions: [120, 120]
   },
   {
     key: 'mayotte',
@@ -38,7 +38,7 @@ export default [
     'key': 'corse',
     centroid: [9.10710374852981, 42.150037669791416],
     parallels: [41.368038, 43.010731],
-    scale: 7000,
+    scale: 6600,
     dimensions: [120, 200]
   }
 ];
