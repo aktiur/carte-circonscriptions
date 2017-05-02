@@ -5,6 +5,8 @@ import {
 } from 'd3-scale-chromatic';
 import {legendColor} from 'd3-svg-legend';
 
+import {percentFormat} from './config';
+
 /* une métrique définit :
  *
  * - une méthode init qui prend la liste des données et initialise le domaine des échelles, par exemple
@@ -41,7 +43,7 @@ class VoteMetric {
     return legendColor()
       .scale(this.scale)
       .title(this.description)
-      .labelFormat('.1%');
+      .labelFormat(percentFormat);
   }
 }
 
@@ -135,7 +137,7 @@ export const simpleMetrics = [
   {
     key: 'candidature',
     label: 'Candidatures FI',
-    scale: scaleOrdinal().range(schemeSet1.slice(0, 3)).domain('M', 'F', ''),
+    scale: scaleOrdinal().range(schemeSet1.slice(0, 3)).domain(['M', 'F', '']),
     init() {
 
     },
