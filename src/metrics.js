@@ -1,7 +1,7 @@
 import {scaleSequential, scaleOrdinal, scaleThreshold} from 'd3-scale';
 import {extent} from 'd3-array';
 import {
-  interpolateReds, interpolatePurples, interpolateOranges, interpolateGreys, schemeReds, schemeSet1
+  interpolateReds, interpolatePurples, interpolateOranges, interpolateGreys, interpolateBlues, schemeReds, schemeSet1
 } from 'd3-scale-chromatic';
 import {legendColor} from 'd3-svg-legend';
 
@@ -84,6 +84,27 @@ function orderOf(data, key) {
 
 
 export const simpleMetrics = [
+  {
+    key: 'abstention',
+    label: 'Abstention',
+    scale: scaleSequential(interpolateBlues),
+    _getValue(d) {
+      return d.properties.totaux.abstentions / d.properties.totaux.inscrits;
+    },
+    init(data) {
+      const domain = extent(data.map(d => this._getValue(d)));
+      this.scale.domain(domain);
+    },
+    getColor(d) {
+      return this.scale(this._getValue(d));
+    },
+    getLegend() {
+      return legendColor()
+        .scale(this.scale)
+        .title('Abstenstion (en part des inscrits)')
+        .labelFormat(percentFormat);
+    }
+  },
   {
     key: 'rang',
     label: 'Rang de Mélenchon',

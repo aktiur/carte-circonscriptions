@@ -1,6 +1,6 @@
 import {scaleLinear, scaleBand} from 'd3-scale';
 import {axisLeft, axisBottom} from 'd3-axis';
-import {percentFormat} from '../config';
+import {percentFormat, intFormat} from '../config';
 
 import './details.css';
 
@@ -28,8 +28,14 @@ function nomCirco(d) {
   return `${d.properties.departement_libelle}, ${d.properties.circo}${d.properties.circo === 1 ? 'ère' : 'ème'} circonscription`;
 }
 
+function resumeTotaux(t) {
+  return `
+  <p><strong>Nombre d'inscrits</strong> : ${intFormat(t.inscrits)}</p>
+  <p><strong>Abstention (part des inscrits)</strong> : ${percentFormat(t.abstentions / t.inscrits)}</p>
+  `;
+}
+
 function resumeCandidature(c) {
-  console.log(c);
   const titulaire = c.titulaire_email ? `${c.titulaire_nom_complet} (<a href="mailto:${c.titulaire_email}">${c.titulaire_email}</a>)` : c.titulaire_nom_complet;
   const suppleant = c.suppleant_email ? `${c.suppleant_nom_complet} (<a href="mailto:${c.suppleant_email}">${c.suppleant_email}</a>)` : c.suppleant_nom_complet;
 
@@ -37,6 +43,7 @@ function resumeCandidature(c) {
   <p><strong>Genre du candidat</strong> : ${c.genre}</p>
   <p><strong>Candidat titulaire</strong> : ${titulaire}</p>
   <p><strong>Candidat suppléant</strong> : ${suppleant}</p>
+  <p><strong>Explication</strong> : ${c.explication}</p>
   `;
 }
 
@@ -63,9 +70,9 @@ export default function details(elem) {
   const x = scaleLinear().rangeRound([0, width]);
   const y = scaleBand().rangeRound([0, height]).padding(0.1);
 
-  const candidature = elem.append('div');
-
   const totaux = elem.append('div');
+
+  const candidature = elem.append('div');
 
   draw = function draw(feature) {
     title.text(nomCirco(feature));
@@ -124,6 +131,7 @@ export default function details(elem) {
 
     figures.exit().remove();
 
+    totaux.html(resumeTotaux(feature.properties.totaux));
     candidature.html(resumeCandidature(feature.properties.candidature));
   };
 }

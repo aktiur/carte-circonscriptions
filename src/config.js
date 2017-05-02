@@ -9,3 +9,4 @@ export const locale = formatLocale({
 });
 
 export const percentFormat = locale.format('.1%');
+export const intFormat = locale.format(',d');

@@ -56,7 +56,7 @@ src/data/topo.json: $(GEO_FILES)
 	| topomerge -k 'd.properties.departement' departements=hexagone  \
 	| topomerge --mesh departements=departements > $@
 
-src/data/supp.json: data/2017_par_circo.csv
+src/data/supp.json: data/2017_par_circo.csv data/candidats.ndjson
 	csv2json -n data/2017_par_circo.csv \
 	| ndjson-filter '["ZN","ZP","ZS","ZW","ZX","ZZ"].includes(d.departement)' \
 	| ndjson-map $(SUPP_MAP_SCRIPT) \
@@ -78,10 +78,11 @@ $(GEO_FILES): $(GEO_DIR)/%.json: $(FEATURES_DIR)/%.ndjson data/2017_par_circo.cs
 	| ndjson-map 'd[0].properties.candidature=d[1], d[0]' \
 	| ndjson-reduce 'p.features.push(d), p' '{"type":"FeatureCollection", "features": []}' > $@
 
+# pour l'hexagone, il y a une circo en double: il faut fusionner 5 et 7 du val de marne
 $(FEATURES_DIR)/hexagone.ndjson: $(GEO_SRC)
 	tr -d '\n' < $< \
 	| ndjson-split 'd.features' \
-	| ndjson-filter 'd.properties.code_dpt.match(/[0-9]{2}/)' > $@
+	| ndjson-filter '(d.properties.code_dpt.match(/[0-9]{2}/) && d.properties.num_circ!=="007")' > $@
 
 # Pour la Corse, il faut corriger le nom de departement
 $(FEATURES_DIR)/corse.ndjson: $(GEO_SRC)
@@ -101,7 +102,7 @@ data/candidats.ndjson: raw/conso.csv
 	| ndjson-map 'd.departement=("00"+d.departement).slice(-2), d' \
 	| ndjson-map 'd.id=d.departement + ("000" + d.circo).slice(-3), d' \
 	| ndjson-map 'd.genre = (["M", "F"].includes(d.genre.trim()) ? d.genre.trim() : ""), d' \
-	| ndjson-map -r _=lodash '_.pick(d, ["id", "genre", "titulaire_nom_complet", "titulaire_email", "suppleant_nom_complet", "suppleant_email"])' > $@
+	| ndjson-map -r _=lodash '_.pick(d, ["id", "genre", "titulaire_nom_complet", "titulaire_email", "suppleant_nom_complet", "suppleant_email", "explication"])' > $@
 
 data/2017_par_circo.csv: data/2017_cleaned.csv
 	python scripts/aggregation_par_circos.py $< > $@
