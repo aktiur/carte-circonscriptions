@@ -1,7 +1,7 @@
 import {transition} from 'd3-transition';
 import {geoPath, geoAlbers} from 'd3-geo';
 import {zoom, zoomIdentity} from 'd3-zoom';
-import {event} from 'd3-selection';
+import {select, selectAll, event} from 'd3-selection';
 import {ascending} from 'd3-array';
 
 import topology from '../data/topo.json';
@@ -92,7 +92,7 @@ function hexagone(elem, t) {
       .attr('class', 'circo')
       .attr('d', path)
       .merge(circos)
-      .on('click', showDetails)
+      .on('click', clicked)
       .transition(t)
       .attr('fill', d => metric.getColor(d));
   }
@@ -143,7 +143,7 @@ function addInsets(elem) {
       .append('path')
       .attr('class', 'circo')
       .attr('d', (d) => d.parent.path(d))
-      .on('click', showDetails)
+      .on('click', clicked)
       .merge(paths)
       .transition(t)
       .attr('fill', d => metric.getColor(d));
@@ -173,13 +173,13 @@ function fe(elem) {
   const g = feSVGs.append('g')
     .attr('class', 'circo')
     .attr('transform', `translate(${dimension / 2},${dimension / 2})`)
-    .on('click', showDetails);
+    .on('click', clicked);
 
   const circles = g
     .append('circle')
     .attr('stroke-width', contoursWidth)
     .attr('stroke', 'black')
-    .attr('r', 0.95 * (dimension / 2));
+    .attr('r', 0.90 * (dimension / 2));
 
   g
     .append('text')
@@ -195,4 +195,16 @@ function fe(elem) {
   }
 
   addListener(draw);
+}
+
+function clicked() {
+  console.log(this);
+  const circo = select(this);
+  selectAll('.selected')
+    .classed('selected', false);
+  circo
+    .raise()
+    .classed('selected', true);
+
+  showDetails.apply(this, arguments);
 }

@@ -46,3 +46,7 @@
     font-size: 25px;
     font-weight: bold;
 }
+
+.map .selected circle, .map path.selected {
+    filter: drop-shadow( 0 0 3px #000 ) saturate(130%);
+}
