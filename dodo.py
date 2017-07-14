@@ -32,56 +32,8 @@ BUNDLE_FILES = ['dist/bundle.js', 'dist/style.css']
 
 PROJ_SIZE = [1000, 900]
 
-ZONES = {
-    'hexagone': {
-        'extent': [[60, 0], [820, 900]]
-    },
-    'corse': {
-        'departements': ['2A', '2B'],
-        'extent': [[800, 700], [970, 870]]
-    },
-    'guadeloupe': {
-        'departements': ['ZA'],
-        'extent': [[60, 400], [200, 550]]
-    },
-    'martinique': {
-        'departements': ['ZB'],
-        'extent': [[60, 550], [140, 700]]
-    },
-    'guyane': {
-        'departements': ['ZC'],
-        'extent': [[60, 700], [170, 870]]
-    },
-    'reunion': {
-        'departements': ['ZD'],
-        'extent': [[820, 500], [950, 620]]
-    },
-    'mayotte': {
-        'departements': ['ZM'],
-        'extent': [[800, 340], [1000, 400]]
-    },
-    'nouvelle-caledonie': {
-        'departements': ['ZN'],
-        'extent': [[600, 40], [800, 170]]
-    },
-    'polynesie-francaise': {
-        'departements': ['ZP'],
-        'extent': [[830, 20], [950, 200]]
-    },
-    'saint-pierre-et-miquelon': {
-        'departements': ['ZS'],
-        'extent': [[40, 60], [120, 140]]
-    },
-    'wallis-et-futuna': {
-        'departements': ['ZW'],
-        'extent': [[850, 220], [950, 320]]
-    },
-    'saint-martin-saint-barthelemy': {
-        'departements': ['ZX'],
-        'extent': [[130, 60], [300, 140]]
-    },
-}
-
+with open('zones.json', 'r') as f:
+    ZONES = json.load(f)
 
 def task_compile_bundle():
     src_dir = Path('src')
@@ -91,6 +43,23 @@ def task_compile_bundle():
         'file_dep': src_files,
         'targets': BUNDLE_FILES,
         'actions': ['npm run build']
+    }
+
+
+def task_create_topology():
+    srcs = [PROJ_ZONE_FILE.format(name=zone) for zone in ZONES]
+    target = 'dist/topology.json'
+    args = ' '.join('"{}"'.format(f) for f in srcs)
+
+    return {
+        'file_dep': srcs,
+        'targets': [target],
+        'actions': [f"""
+            cat {args} \
+            | ndjson-split 'd.features' \
+            | geo2topo -n circonscriptions=- \
+            | topoquantize 1e5 > "{target}"
+        """]
     }
 
 
@@ -112,7 +81,7 @@ def task_test_svg():
 
 
 def task_project_zones():
-    extents = {z: v['extent'] for z, v in ZONES.items() if 'extent' in v}
+    extents = {z: v['extent'] for z, v in ZONES.items()}
 
     def project_zone(extent, src, target, desc):
         rotate = json.dumps([-desc['center'][0], 0])
@@ -130,7 +99,7 @@ def task_project_zones():
         yield {
             'name': zone,
             'actions': [CmdAction((project_zone, [extent, src, target], {}))],
-            'file_dep': [src, 'dodo.py'],
+            'file_dep': [src, 'zones.json'],
             'targets': [target],
             'getargs': {'desc': ('read_bounds', zone)},
             'verbosity': 2,
@@ -193,7 +162,7 @@ def task_split_zones():
         target = NDJSON_ZONE_FILES.format(name=zone_name)
         yield {
             'name': zone_name,
-            'file_dep': [GEO_RESULTS],
+            'file_dep': [GEO_RESULTS, 'zones.json'],
             'targets': [target],
             'actions': [f"""
                 ndjson-filter '{deps}.includes(d.properties.departement)' < {GEO_RESULTS} > {target}
@@ -205,7 +174,7 @@ def task_split_zones():
 
     yield {
         'name': 'hexagone',
-        'file_dep': [GEO_RESULTS],
+        'file_dep': [GEO_RESULTS, 'zones.json'],
         'targets': [target],
         'actions': [f"""ndjson-filter '!{exclude}.includes(d.properties.departement)' < {GEO_RESULTS} > {target}"""]
     }
