@@ -16,6 +16,8 @@ const departementsStrokeWidth = 1.5;
 
 export default function (topology, metric$) {
 
+  const data = feature(topology, topology.objects.circonscriptions).features;
+
   function map (elem) {
     elem.attr('class', 'map');
 
@@ -27,7 +29,7 @@ export default function (topology, metric$) {
     const circosGroup = zoomableGroup.append('g');
 
     let circos = circosGroup.selectAll('.circonscription')
-      .data(feature(topology, topology.objects.circonscriptions).features);
+      .data(data);
 
     const path = geoPath().projection(null);
 
@@ -40,6 +42,7 @@ export default function (topology, metric$) {
       .merge(circos);
 
     function changeFill(metric) {
+      metric.init(data);
       const t = transition('circonscriptions').duration(1000);
 
       circos.transition(t)

@@ -1,12 +1,12 @@
 import {formatLocale} from 'd3-format';
 import {scaleSequential} from 'd3-scale';
 import {
-  interpolateReds,
-  interpolatePurples,
-  interpolateOranges,
-  interpolateGreys,
-  interpolateBlues,
-  interpolateGreens
+  schemeReds,
+  schemePurples,
+  schemeOranges,
+  schemeGreys,
+  schemeBlues,
+  schemeGreens
 } from 'd3-scale-chromatic';
 
 export const locale = formatLocale({
@@ -33,37 +33,37 @@ export const nuanceMetrics = [
   {
     nuances: ['FI'],
     label: 'FI',
-    scale: scaleSequential(interpolateReds)
+    colors: schemeReds[5]
   },
   {
     nuances: ['REM', 'MDM'],
     label: 'EM',
-    scale: scaleSequential(interpolateOranges),
+    colors: schemeOranges[5],
   },
   {
     nuances: ['FN'],
     label: 'FN',
-    scale: scaleSequential(interpolateGreys)
+    colors: schemeGreys[5]
   },
   {
     nuances: ['LR', 'UDI'],
     label: 'LR',
-    scale: scaleSequential(interpolatePurples)
+    colors: schemePurples[5]
   },
   {
     nuances: ['SOC'],
     label: 'PS',
-    scale: scaleSequential(interpolateReds)
+    colors: schemeReds[5]
   },
   {
     nuances: ['ECO'],
     label: 'EELV',
-    scale: scaleSequential(interpolateGreens)
+    colors: schemeGreens[5]
   }
 ];
 
 export const abstentionMetricParameters = {
-  scale: scaleSequential(interpolateBlues),
+  colors: schemeBlues[5],
   label: 'Abs.'
 };
 

@@ -1,5 +1,4 @@
-import {scaleOrdinal} from 'd3-scale';
-import {extent} from 'd3-array';
+import {scaleOrdinal, scaleQuantile} from 'd3-scale';
 
 import {nuanceMetrics, nuanceColors, abstentionMetricParameters, NaNColor} from './config';
 
@@ -17,10 +16,7 @@ class Metric {
     this.scale = scale;
   }
 
-  init(data) {
-    const domain = extent(data.map(d => this._getValue(d)));
-    this.scale.domain(domain);
-  }
+  init(){}
 
   getColor(d) {
     const v = this._getValue(d);
@@ -28,9 +24,22 @@ class Metric {
   }
 }
 
-class VoteMetric extends Metric {
-  constructor({scale, nuances, label}) {
-    super({scale});
+class QuantileMetric extends Metric {
+  constructor({colors}) {
+    super({
+      scale: scaleQuantile().range(colors)
+    });
+  }
+
+  init(data) {
+    console.log(data.map(d => this._getValue(d)));
+    this.scale.domain(data.map(d => this._getValue(d)));
+  }
+}
+
+class VoteMetric extends QuantileMetric {
+  constructor({colors, nuances, label}) {
+    super({colors});
     this.nuances = nuances;
     this.label = label;
   }
@@ -44,7 +53,7 @@ class VoteMetric extends Metric {
 export const votesMetrics = nuanceMetrics.map(descr => new VoteMetric(descr));
 
 const abstentionMetric = Object.assign(
-  new Metric({scale: abstentionMetricParameters.scale}),
+  new QuantileMetric({colors: abstentionMetricParameters.colors}),
   {
     label: abstentionMetricParameters.label,
     _getValue(d) {
@@ -66,7 +75,6 @@ const premierMetric = Object.assign(
     _getValue(d) {
       return d.candidats[0].nuance;
     },
-    init: function() {},
   }
 );
 
