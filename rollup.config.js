@@ -28,5 +28,5 @@ export default {
   format: 'iife',
   plugins,
   dest: 'dist/bundle.js',
-  moduleName: 'melencarte'
+  moduleName: 'carte-circonscriptions'
 };
