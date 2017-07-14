@@ -1,9 +1,13 @@
 .selector {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: space-between;
     background: #c9462c;
     min-height: 60px;
+}
+
+.selector .scrutin, .selector .metric {
+    display: flex;
 }
 
 .selector .option {

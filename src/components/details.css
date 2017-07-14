@@ -1,13 +1,88 @@
 .details {
-    margin: 30px;
+    flex-grow: 1;
+    padding: 0;
+    background-color: rgba(255,255,255,1);
+    position: relative;
+}
+
+.details.hide {
+    padding: 0;
+}
+
+.details.hide * {
+    display: none;
+}
+
+.details .toggle {
+    font-size: 30px;
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 0;
+    cursor: pointer;
+    border-radius: 0;
+    border: none;
+}
+
+.details.hide .toggle {
+    display: block;
+    position: inherit;
+
 }
 
 .details h2 {
     text-align: center;
 }
 
-.details .figure {
-    fill: white;
-    font-size: 16px;
-    font-weight: bold;
+.details table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin: 0.5em;
+}
+
+.details .hide {
+    display: none;
+}
+
+.details caption {
+    caption-side: bottom;
+}
+
+.details thead tr th:not(:first-child) {
+    border-bottom: 1px #999999 solid;
+    font-weight: 900;
+}
+
+.details .nuance {
+    text-align: right;
+    font-weight: 900;
+}
+
+.details table {
+    margin: auto;
+}
+
+.details tbody .pourcentage, .details tbody .votes {
+    text-align: right;
+    font-family: "Droid Sans Mono", monospace;
+}
+
+.details thead .candidat {
+    text-align: left;
+}
+
+.details thead .pourcentage, .details thead .votes {
+    text-align: right;
+}
+
+.details div.bar {
+    height: 1em;
+}
+
+.details th, .details td {
+    padding: 0 0.5em;
+}
+
+.details tr.Abstention td {
+   border-top: 1px #999999 solid;
 }

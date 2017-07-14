@@ -67,7 +67,7 @@ def clean_results(in_file, out_file):
     for donnees_bureau in enumerer_circos(r):
         lines.append(donnees_bureau)
 
-    lines.sort()
+    # lines.sort()
 
     for _, l in lines:
         out_file.write(l)

@@ -1,143 +1,139 @@
-import {scaleLinear, scaleBand} from 'd3-scale';
-import {axisLeft, axisBottom} from 'd3-axis';
+import {scaleLinear} from 'd3-scale';
 import {percentFormat, intFormat} from '../config';
+import {max} from 'd3-array';
+import {Observable} from 'rxjs/Observable';
+
+import {nuanceColors} from '../config';
+
+import designationDepartements from '../departements.json';
 
 import './details.css';
 
-const barColors = {
-  'ARTHAUD': "#c41114",
-  'ASSELINEAU': "#057c85",
-  'CHEMINADE': "#e53517",
-  'DUPONT-AIGNAN': "#39394b",
-  'FILLON': "#23408f",
-  'HAMON': "#e0003c",
-  'LASSALLE': "#ff9632",
-  'LE PEN': "#2f3e4b",
-  'MÉLENCHON': "#ff3f19",
-  'POUTOU': "#ff1f17",
-  'MACRON': '#ffc600'
-};
+const maxBarWidth = 80;
 
-const width = 500, height = 400;
-const labelsWidth = 100, scaleHeight = 20;
-const rightMargin = 20;
+export default function (scrutin$, circonscription$) {
+  function details(elem) {
+    elem.attr('class', 'details');
 
-let draw = null;
+    const title = elem.append('h2').text('');
+
+    const noDataMessage = elem.append('div')
+      .attr('class', 'hide')
+      .text('Pas de second tour dans cette circonscription.');
+
+    // set up table
+    const table = elem.append('table').attr('class', 'hide');
+    const tbody = setUpTable(table);
+
+    // set up scale for bars
+    const x = scaleLinear().rangeRound([0, maxBarWidth]);
+
+    Observable
+      .combineLatest(scrutin$, circonscription$)
+      .subscribe(showDetails);
+
+    function showDetails([scrutin, circonscription]) {
+      title.text(nomCirco(circonscription));
+
+      if (circonscription[scrutin] === null) {
+        table.classed('hide', true);
+        noDataMessage.classed('hide', false);
+        return;
+      }
+
+      table.classed('hide', false);
+      noDataMessage.classed('hide', true);
+
+      const resultats = circonscription[scrutin];
+      const data = formatData(resultats);
+
+      x.domain([0, max(data, d => d.score)]);
+
+      const lignes = tbody.selectAll('tr').data(data, d => d.id);
+
+      // enter phase
+      const lignesEnter = lignes.enter()
+        .append('tr')
+        .attr('class', d => d.nuance);
+
+      lignesEnter.append('th')
+        .text(d => d.nuance)
+        .attr('class', 'nuance')
+        .style('color', d => nuanceColors[d.nuance]);
+      lignesEnter.append('td').text(d => d.label).attr('class', 'candidat');
+      lignesEnter.append('td').attr('class', 'votes');
+      lignesEnter.append('td').attr('class', 'pourcentage');
+      lignesEnter.append('td').append('div').attr('class', 'bar');
+
+      const lignesUpdate = lignesEnter.merge(lignes).order();
+
+      lignesUpdate.select('.votes').text(d => d.votes);
+      lignesUpdate.select('.pourcentage').text(d => d.pourcentage);
+      lignesUpdate.select('.bar')
+        .style('width', d => x(d.score) + 'px')
+        .style('background-color', d => nuanceColors[d.nuance]);
+
+      lignes.exit().remove();
+    }
+  }
+
+  return details;
+}
 
 function nomCirco(d) {
-  return `${d.properties.departement_libelle}, ${d.properties.circo}${d.properties.circo === 1 ? 'ère' : 'ème'} circonscription`;
+  const designation = designationDepartements[d.departement];
+  const ordinal = d.circo === 1 ? 'ère' : 'ème';
+  return `${d.circonscription}${ordinal} circonscription ${designation}`;
 }
 
-function resumeTotaux(t) {
-  return `
-  <p><strong>Nombre d'inscrits</strong> : ${intFormat(t.inscrits)}</p>
-  <p><strong>Abstention (part des inscrits)</strong> : ${percentFormat(t.abstentions / t.inscrits)}</p>
-  `;
+function toTitleCase(str) {
+  return str.replace(/\w(\S|[-])*/g, function (txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
 }
 
-function resumeCandidature(c) {
-  const titulaire = c.titulaire_email ? `${c.titulaire_nom_complet} (<a href="mailto:${c.titulaire_email}">${c.titulaire_email}</a>)` : c.titulaire_nom_complet;
-  const suppleant = c.suppleant_email ? `${c.suppleant_nom_complet} (<a href="mailto:${c.suppleant_email}">${c.suppleant_email}</a>)` : c.suppleant_nom_complet;
+function setUpTable(table) {
+  table.append('caption').text("Scores des candidats en % des exprimés, de l'abstention en % des inscrits");
+  const header = table.append('thead').append('tr');
 
-  return `
-  <p><strong>Genre du candidat</strong> : ${c.genre}</p>
-  <p><strong>Candidat titulaire</strong> : ${titulaire}</p>
-  <p><strong>Candidat suppléant</strong> : ${suppleant}</p>
-  <p><strong>Explication</strong> : ${c.explication}</p>
-  `;
+  [
+    ['nuance', ''],
+    ['candidat', 'Candidat'],
+    ['votes', 'Voix'],
+    ['pourcentage', '%'],
+    ['bar', '']
+  ].map(([c, l]) => {
+    header.append('th')
+      .text(l)
+      .attr('class', c);
+  });
+
+  return table.append('tbody');
 }
 
-export default function details(elem) {
-  elem.attr('class', 'details');
+function formatData(resultats) {
 
-  const title = elem.append('h2')
-    .text('Cliquez sur une circonscription pour obtenir des détails');
+  const abstention = resultats.inscrits - resultats.votants;
+  const abstentionInscrits = abstention / resultats.inscrits;
+  const abstentionExprimes = abstention / resultats.exprimes;
 
-  const graph = elem.append('svg')
-    .attr('width', width + labelsWidth + rightMargin)
-    .attr('height', height + scaleHeight);
+  const data = resultats.candidats.map(c => ({
+    id: `${c.nuance}/${c.nom}/${c.prenom}`,
+    label: toTitleCase(c.nom),
+    pourcentage: percentFormat(c.voix / resultats.exprimes),
+    votes: intFormat(c.voix),
+    score: c.voix / resultats.exprimes,
+    nuance: c.nuance
+  }));
 
-  const results = graph.append('g')
-    .attr('transform', `translate(${labelsWidth},0)`);
+  data.push({
+    id: 'abstention',
+    label: '-',
+    pourcentage: percentFormat(abstentionInscrits),
+    votes: intFormat(abstention),
+    score: abstentionExprimes,
+    nuance: 'Abstention'
+  });
 
-  const labels = results.append('g')
-    .attr('class', 'axis axis--y');
-
-  const scale = results.append('g')
-    .attr('class', 'axis axis--x')
-    .attr('transform', `translate(0,${height})`);
-
-  const x = scaleLinear().rangeRound([0, width]);
-  const y = scaleBand().rangeRound([0, height]).padding(0.1);
-
-  const totaux = elem.append('div');
-
-  const candidature = elem.append('div');
-
-  draw = function draw(feature) {
-    title.text(nomCirco(feature));
-
-    const votes = feature.properties.votes;
-    const exprimes = feature.properties.totaux.exprimes;
-
-    const candidats = Object.keys(votes).sort(function (a, b) {
-      return votes[a] - votes[b];
-    }).reverse().slice(0, 5);
-
-    const data = candidats.map(function (c) {
-      return {candidat: c, score: votes[c]/exprimes};
-    });
-
-    y.domain(candidats);
-    x.domain([0, Math.max(0.25, data[0].score)]);
-
-    labels.call(axisLeft(y));
-    scale.call(axisBottom(x).ticks(5, '%'));
-
-    const bars = results.selectAll('.bar').data(data, function (d) {
-      return d.candidat;
-    });
-
-    bars.enter()
-      .append('rect')
-      .attr('class', 'bar')
-      .attr('x', 0)
-      .merge(bars)
-      .attr('y', function (d) {
-        return y(d.candidat);
-      })
-      .attr('height', y.bandwidth())
-      .attr('width', function (d) {
-        return x(d.score);
-      })
-      .attr('fill', function (d) {
-        return barColors[d.candidat];
-      });
-
-    bars.exit().remove();
-
-    const figures = results.selectAll('.figure').data(data, function(d) {
-      return d.candidat;
-    });
-
-    figures.enter()
-      .append('text')
-      .attr('class', 'figure')
-      .attr('dx', 10)
-      .attr('dy', '.3em')
-      .merge(figures)
-      .attr('y', d => y(d.candidat) + y.bandwidth() / 2)
-      .text(d => percentFormat(d.score));
-
-    figures.exit().remove();
-
-    totaux.html(resumeTotaux(feature.properties.totaux));
-    candidature.html(resumeCandidature(feature.properties.candidature));
-  };
-}
-
-export function showDetails(feature) {
-  if (draw) {
-    draw(feature);
-  }
+  return data;
 }

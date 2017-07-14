@@ -2,25 +2,24 @@ import './dashboard.css';
 import selector from './selector';
 import map from './map';
 import details from './details';
-import legend from './legend';
 
-function dashboard(root) {
-  root.append('div')
-    .call(selector);
+export default function(topology) {
+  function dashboard(root) {
+    const s = selector();
+    const m = map(topology, s.metric$);
+    const d = details(s.scrutin$, m.circonscription$);
 
-  const content = root.append('div').attr('class', 'content');
+    root.append('div')
+      .call(s);
 
-  content.append('div')
-    .call(map);
+    const content = root.append('main');
 
-  const sidebar = content.append('div');
+    content.append('div')
+      .call(m);
 
-  sidebar.append('div')
-    .call(legend);
+    content.append('div')
+      .call(d);
+  }
 
-  sidebar.append('div')
-    .call(details);
-
+  return dashboard;
 }
-
-export default dashboard;

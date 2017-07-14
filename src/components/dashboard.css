@@ -2,10 +2,6 @@
     min-height: 100%;
 }
 
-#app .content {
+main {
     display: flex;
-}
-
-.content .legend {
-    padding: auto;
 }
