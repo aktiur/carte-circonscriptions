@@ -22,3 +22,7 @@
 .map .circonscription {
     cursor: pointer;
 }
+
+.map .circonscription.selected {
+    filter: url('#glowF');
+}

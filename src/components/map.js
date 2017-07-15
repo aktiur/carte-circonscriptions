@@ -2,7 +2,7 @@ import {ReplaySubject} from 'rxjs/ReplaySubject';
 
 import {transition} from 'd3-transition';
 import {zoom, zoomIdentity} from 'd3-zoom';
-import {event} from 'd3-selection';
+import {select, selectAll, event} from 'd3-selection';
 import {geoPath} from 'd3-geo';
 
 import {feature, mesh} from 'topojson';
@@ -26,6 +26,8 @@ export default function (topology, metric$) {
       .attr('width', width)
       .attr('height', height);
 
+    setupFilter(svg);
+
     const zoomableGroup = svg.append('g');
     const circosGroup = zoomableGroup.append('g');
 
@@ -41,8 +43,14 @@ export default function (topology, metric$) {
       .attr('d', path)
       .attr('stroke', 'black')
       .attr('stroke-width', circosStrokeWidth)
-      .on('click', d => circonscription$.next(d.properties))
+      .on('click', clicked)
       .merge(circos);
+
+    function clicked(d, i, nodes) {
+      selectAll('.selected').classed('selected', false);
+      select(this).classed('selected', true).raise();
+      circonscription$.next(d.properties);
+    }
 
     function changeFill(metric) {
       metric.init(data);
@@ -94,4 +102,36 @@ export default function (topology, metric$) {
   const circonscription$ = map.circonscription$ = new ReplaySubject(1);
 
   return map;
+}
+
+
+const filterContent = `
+<feMorphology operator="dilate" radius="4" in="SourceAlpha" result="thicken" />
+
+<!-- Use a gaussian blur to create the soft blurriness of the glow -->
+<feGaussianBlur in="thicken" stdDeviation="7" result="blurred" />
+
+<!-- Change the colour -->
+<!--<feFlood flood-color="rgb(200,200,200)" result="glowColor" />-->
+
+<!-- Color in the glows -->
+<!--<feComposite in="glowColor" in2="blurred" operator="in" result="softGlow_colored" />-->
+
+<!--	Layer the effects together -->
+<feMerge>
+  <feMergeNode in="blurred"/>
+  <feMergeNode in="SourceGraphic"/>
+</feMerge>
+`;
+
+
+function setupFilter(svg) {
+  const defs = svg.append('defs');
+  const filter = defs.append('filter')
+    .attr('id', 'glowF')
+    .attr('height', '200')
+    .attr('width', '200')
+    .attr('x', '-80')
+    .attr('y', '-80')
+    .html(filterContent);
 }
