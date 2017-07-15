@@ -33,7 +33,7 @@
     caption-side: bottom;
 }
 
-.details thead tr th:not(:first-child) {
+.details thead tr th {
     border-bottom: 1px #999999 solid;
     font-weight: 900;
 }
@@ -41,6 +41,16 @@
 .details .nuance {
     text-align: right;
     font-weight: 900;
+    width: 100px;
+}
+
+.details thead .pourcentage, .details thead .votes {
+    text-align: right;
+    width: 100px;
+}
+
+.details th.bar {
+    width: 100px;
 }
 
 .details tbody .pourcentage, .details tbody .votes {
@@ -52,9 +62,6 @@
     text-align: left;
 }
 
-.details thead .pourcentage, .details thead .votes {
-    text-align: right;
-}
 
 .details div.bar {
     height: 1em;
@@ -64,6 +71,12 @@
     padding: 0 0.5em;
 }
 
-.details tr.Abstention td {
+.details tr.Abstention td, .details tr.Abstention th {
    border-top: 1px #999999 solid;
+}
+
+caption {
+    margin-top: 0.6em;
+    font-style: italic;
+    font-size: 0.8em;
 }

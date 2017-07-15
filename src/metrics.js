@@ -2,7 +2,14 @@ import {scaleOrdinal, scaleLinear, scaleQuantile, scaleBand} from 'd3-scale';
 import {axisBottom} from 'd3-axis';
 import {extent} from 'd3-array';
 
-import {nuanceMetrics, nuanceColors, abstentionMetricParameters, NaNColor, intFormat} from './config';
+import {
+  nuanceMetrics,
+  nuanceColors,
+  abstentionMetricParameters,
+  NaNColor,
+  intFormat,
+  simplePercentFormat
+} from './config';
 
 /* une métrique définit :
  *
@@ -49,7 +56,7 @@ class QuantileMetric extends Metric {
     this.axis = axisBottom(this.x)
       .tickSize(13)
       .tickValues(tickValues)
-      .tickFormat(d => intFormat(100 * d));
+      .tickFormat(d => d === max ? simplePercentFormat(d) : intFormat(100 * d));
   }
 
   legend(elem) {

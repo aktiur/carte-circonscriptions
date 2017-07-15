@@ -17,6 +17,7 @@ export const locale = formatLocale({
 });
 
 export const percentFormat = locale.format('.1%');
+export const simplePercentFormat = locale.format('.0%');
 export const intFormat = locale.format(',d');
 
 export const NaNColor = 'rgb(200,200,200)';
