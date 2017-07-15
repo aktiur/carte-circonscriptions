@@ -7,6 +7,7 @@ import {geoPath} from 'd3-geo';
 
 import {feature, mesh} from 'topojson';
 
+import {maxZoom} from '../config';
 
 import './map.css';
 
@@ -31,6 +32,8 @@ export default function (topology, metric$) {
     let circos = circosGroup.selectAll('.circonscription')
       .data(data);
 
+    let legend = null;
+
     const path = geoPath().projection(null);
 
     circos = circos.enter().append('path')
@@ -47,6 +50,14 @@ export default function (topology, metric$) {
 
       circos.transition(t)
         .attr('fill', d => metric.getColor(d));
+
+      if(legend) {
+        legend.remove();
+      }
+
+      legend = svg.append('g')
+        .attr('transform', `translate(${width/2},850)`)
+        .call(metric.legend);
     }
 
     const departements = zoomableGroup.append('path')

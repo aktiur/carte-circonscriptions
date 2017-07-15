@@ -10,6 +10,7 @@ import {scrutins, NaNColor} from '../config';
 const metricWrapper = ([scrutin, metric]) => ({
   init: data => metric.init(data.map(d => d.properties[scrutin]).filter(d => d !== null)),
   getColor: d => d.properties[scrutin] === null ? NaNColor : metric.getColor(d.properties[scrutin]),
+  legend: elem => metric.legend(elem)
 });
 
 export default function () {

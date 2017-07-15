@@ -9,7 +9,7 @@ import designationDepartements from '../departements.json';
 
 import './details.css';
 
-const maxBarWidth = 80;
+const maxBarWidth = 100;
 
 export default function (scrutin$, circonscription$) {
   function details(elem) {

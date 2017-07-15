@@ -1,5 +1,4 @@
 import {formatLocale} from 'd3-format';
-import {scaleSequential} from 'd3-scale';
 import {
   schemeReds,
   schemePurples,
@@ -21,6 +20,8 @@ export const percentFormat = locale.format('.1%');
 export const intFormat = locale.format(',d');
 
 export const NaNColor = 'rgb(200,200,200)';
+
+export const maxZoom = 40;
 
 export const scrutins = [
   {label: 'Légis. 1', selector: 'legislatives-1'},
@@ -68,9 +69,9 @@ export const abstentionMetricParameters = {
 };
 
 export const nuanceColors = {
-  'EXG': "#c41114",
-  'COM': "#ff3f00",
-  'FI': "#ff3f19",
+  'EXG': "#be1113",
+  'COM': "#a90f00",
+  'FI': "#f45532",
   'SOC': "#f88573",
   'RDG': '#ffb494',
   'DVG': '#e8b68c',

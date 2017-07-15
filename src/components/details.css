@@ -13,23 +13,6 @@
     display: none;
 }
 
-.details .toggle {
-    font-size: 30px;
-    display: block;
-    position: absolute;
-    top: 0;
-    right: 0;
-    cursor: pointer;
-    border-radius: 0;
-    border: none;
-}
-
-.details.hide .toggle {
-    display: block;
-    position: inherit;
-
-}
-
 .details h2 {
     text-align: center;
 }
@@ -37,7 +20,9 @@
 .details table {
     border-spacing: 0;
     border-collapse: collapse;
-    margin: 0.5em;
+    margin: auto;
+    table-layout: fixed;
+    width: 90%;
 }
 
 .details .hide {
@@ -56,10 +41,6 @@
 .details .nuance {
     text-align: right;
     font-weight: 900;
-}
-
-.details table {
-    margin: auto;
 }
 
 .details tbody .pourcentage, .details tbody .votes {
