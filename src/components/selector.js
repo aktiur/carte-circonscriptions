@@ -4,67 +4,140 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/observable/combineLatest';
 
 import './selector.css';
-import metrics from '../metrics';
-import {scrutins, NaNColor} from '../config';
+import {generalMetrics, specificMetrics} from '../metrics';
+import {scrutins, nuanceDescriptions, NaNColor} from '../config';
 
-const metricWrapper = ([scrutin, metric]) => ({
-  init: data => metric.init(data.map(d => d.properties[scrutin]).filter(d => d !== null)),
-  getColor: d => d.properties[scrutin] === null ? NaNColor : metric.getColor(d.properties[scrutin]),
-  legend: elem => metric.legend(elem)
-});
+export default function (circonscriptions) {
 
-export default function () {
-
-  const selector = function(elem) {
+  const selector = function (elem) {
     elem.attr('class', 'selector');
 
-    const scrutinSelector = elem.append('div').attr('class', 'scrutin');
-    const metricSelector = elem.append('div').attr('class', 'metric');
+    const scrutinSelector = elem.append('div').attr('class', 'scrutins group');
 
-    let scrutinOptions = scrutinSelector.selectAll('.option').data(scrutins);
-    let scrutinOptionsEntering = scrutinOptions.enter()
+    scrutinSelector.append('h3').text('Choix du scrutin');
+    let scrutinGroup = scrutinSelector.append('div').selectAll('.scrutin').data(scrutins)
+      .enter()
+      .append('div')
+      .attr('class', 'subgroup');
+
+    scrutinGroup.append('h4').text(d => d.label);
+
+    let tourOptions = scrutinGroup.append('div').selectAll('.tour').data((d, i) => [
+      {label: '1<sup>er</sup> tour', selector: d.selector + '-1', n: i},
+      {label: '2<sup>e</sup> tour', selector: d.selector + '-2'}
+    ]).enter()
+      .append('div')
+      .attr('class', 'option tour');
+
+    tourOptions
+      .call(appendRadio({
+        'name': 'scrutin',
+        'id': (d, i) => `id-${d.selector}`,
+        'checked': (d, i) => d.n === 0 && i === 0,
+        'onClick': d => scrutin$.next(d.selector)
+      }));
+
+    tourOptions
+      .append('label')
+      .attr('for', (d, i) => `id-${d.selector}`)
+      .html(d => d.label);
+
+    const metricSelector = elem.append('div').attr('class', 'metric group');
+    metricSelector.append('h3').text("Choix de l'indicateur");
+
+    const metricContainer = metricSelector.append('div');
+
+    const generalMetricsDiv = metricContainer.append('div').attr('class', 'subgroup');
+    generalMetricsDiv.append('h4').text('Indicateurs généraux');
+    const generalMetricOptions = generalMetricsDiv.append('div').selectAll('.option').data(generalMetrics)
+      .enter()
       .append('div')
       .attr('class', 'option');
 
-    scrutinOptionsEntering
-      .append('input')
-      .attr('type', 'radio')
-      .property('checked', (d, i) => i === 0)
-      .attr('name', 'scrutin')
-      .attr('id', (d, i) => `scrutin-${i}`)
-      .on('click', d => scrutin$.next(d.selector));
+    generalMetricOptions.call(appendRadio({
+      name: 'metric',
+      id: (d, i) => `general-metric-${i}`,
+      checked: (d, i) => i === 0,
+      onClick: d => metricConstructor$.next(d)
+    }));
 
-    scrutinOptionsEntering
+    generalMetricOptions
       .append('label')
-      .attr('for', (d, i) => `scrutin-${i}`)
+      .attr('for', (d, i) => `general-metric-${i}`)
       .text(d => d.label);
 
-    let metricOptions = metricSelector.selectAll('.option').data(metrics).enter()
+    const specificMetricsDiv = metricContainer.append('div').attr('class', 'subgroup');
+
+    const nuanceOptionsContainer = specificMetricsDiv.append('div');
+    nuanceOptionsContainer.append('h4').text('Indicateurs pour').attr('class', 'inlined');
+    const nuanceOptions = nuanceOptionsContainer.selectAll('.option').data(nuanceDescriptions).enter()
+      .append('div')
+      .attr('class', 'option nuance');
+
+    nuanceOptions
+      .call(appendRadio({
+        name: 'nuance',
+        id: (d, i) => `nuance-${i}`,
+        checked: (d, i) => i === 0,
+        onClick: d => nuance$.next(d)
+      }));
+
+    nuanceOptions
+      .append('label')
+      .attr('for', (d, i) => `nuance-${i}`)
+      .text(d => d.label);
+
+    const specificIndicatorOptions = specificMetricsDiv.append('div').selectAll('.option').data(specificMetrics).enter()
       .append('div')
       .attr('class', 'option');
 
-    metricOptions
-      .append('input')
-      .attr('type', 'radio')
-      .property('checked', (d, i) => i === 0)
-      .attr('name', 'metric')
-      .attr('id', (d, i) => `metric-${i}`)
-      .on('click', d => rawMetric$.next(d));
+    specificIndicatorOptions.call(appendRadio({
+      name: 'metric',
+      id: (d, i) => `specific-metric-${i}`,
+      checked: false,
+      onClick: d => metricConstructor$.next(d),
+    }));
 
-    metricOptions
+    specificIndicatorOptions
       .append('label')
-      .attr('for', (d, i) => `metric-${i}`)
+      .attr('for', (d, i) => `specific-metric-${i}`)
       .text(d => d.label);
   };
 
   const scrutin$ = selector.scrutin$ = new ReplaySubject(1);
-  const rawMetric$ = new ReplaySubject(1);
-  selector.metric$ = Observable
-    .combineLatest(scrutin$, rawMetric$)
-    .map(metricWrapper);
+  const nuance$ = selector.nuance$ = new ReplaySubject(1);
+  const metricConstructor$ = new ReplaySubject(1);
 
-  scrutin$.next(scrutins[0].selector);
-  rawMetric$.next(metrics[0]);
+  const metric$ = selector.metric$ = Observable.combineLatest(scrutin$, nuance$, metricConstructor$)
+    .map(instantiateMetric(circonscriptions));
+
+  scrutin$.next('presidentielle-1');
+  nuance$.next(nuanceDescriptions[0]);
+  metricConstructor$.next(generalMetrics[0]);
 
   return selector;
+}
+
+
+function appendRadio({name, id, checked, onClick}) {
+  return function (elem) {
+    elem.append('input')
+      .attr('type', 'radio')
+      .property('checked', checked)
+      .attr('name', name)
+      .attr('id', id)
+      .on('click', onClick);
+  };
+}
+
+function instantiateMetric(circonscriptions) {
+  return function ([scrutin, nuance, metric]) {
+    const m = metric({
+      data: circonscriptions.map(d => d.properties[scrutin]).filter(d => d !== null),
+      nuance,
+    });
+    const a =  d => d.properties[scrutin] !== null ? m(d.properties[scrutin]) : NaNColor;
+    a.legend = m.legend;
+    return a;
+  };
 }

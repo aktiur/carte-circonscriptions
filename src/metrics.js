@@ -1,9 +1,8 @@
-import {scaleOrdinal, scaleLinear, scaleQuantile, scaleBand} from 'd3-scale';
+import {scaleOrdinal, scaleLinear, scaleQuantile, scaleBand, scaleThreshold} from 'd3-scale';
 import {axisBottom} from 'd3-axis';
-import {extent} from 'd3-array';
+import {extent, zip, range} from 'd3-array';
 
 import {
-  nuanceMetrics,
   nuanceColors,
   abstentionMetricParameters,
   NaNColor,
@@ -22,58 +21,33 @@ import {
 const legendWidth = 480;
 
 
-class Metric {
-  constructor({scale}) {
-    this.scale = scale;
-  }
+function thresholdLegend({tickValues, extent, scale, title}) {
+  // scale used to draw the legend
+  const x = scaleLinear()
+    .domain(extent)
+    .range([-legendWidth / 2, legendWidth / 2]);
 
-  init() {
-  }
+  const axis = axisBottom(x)
+    .tickSize(13)
+    .tickValues([extent[0], ...tickValues, extent[1]])
+    .tickFormat(d => d === extent[1] ? simplePercentFormat(d) : intFormat(100 * d));
 
-  getColor(d) {
-    const v = this._getValue(d);
-    return Number.isNaN(v) ? NaNColor : this.scale(v);
-  }
-}
+  return function legend(elem) {
+    elem.call(axis);
 
-class QuantileMetric extends Metric {
-  constructor({colors}) {
-    super({
-      scale: scaleQuantile().range(colors)
-    });
-  }
-
-  init(data) {
-    const values = data.map(d => this._getValue(d));
-    const [min, max] = extent(values);
-    this.scale.domain(values);
-    this.x = scaleLinear()
-      .domain([min, max])
-      .range([-legendWidth / 2, legendWidth / 2]);
-
-    const tickValues = [min, ...this.scale.quantiles(), max];
-
-    this.axis = axisBottom(this.x)
-      .tickSize(13)
-      .tickValues(tickValues)
-      .tickFormat(d => d === max ? simplePercentFormat(d) : intFormat(100 * d));
-  }
-
-  legend(elem) {
-    elem.call(this.axis);
-    elem.select('.domain').remove();
+    //elem.select('.domain').remove();
     elem.selectAll('rect')
-      .data(this.scale.range().map(color => {
-        const d = this.scale.invertExtent(color);
-        if (d[0] === null) d[0] = this.x.domain()[0];
-        if (d[1] === null) d[1] = this.x.domain()[1];
+      .data(scale.range().map(color => {
+        const d = scale.invertExtent(color);
+        if (d[0] === null) d[0] = x.domain()[0];
+        if (d[1] === null) d[1] = x.domain()[1];
         return d;
       }))
       .enter().insert('rect', '.tick')
       .attr('height', 8)
-      .attr('x', d => this.x(d[0]))
-      .attr('width', d => (this.x(d[1]) - this.x(d[0])))
-      .attr('fill', d => this.scale(d[0]));
+      .attr('x', d => x(d[0]))
+      .attr('width', d => (x(d[1]) - x(d[0])))
+      .attr('fill', d => scale(d[0]));
 
     elem.append("text")
       .attr('fill', 'black')
@@ -81,89 +55,156 @@ class QuantileMetric extends Metric {
       .attr("text-anchor", "start")
       .attr("x", -legendWidth / 2)
       .attr("y", -6)
-      .text(this.description);
-  }
+      .text(title);
+  };
 }
 
-class VoteMetric extends QuantileMetric {
-  constructor({colors, nuances, label}) {
-    super({colors});
-    this.nuances = nuances;
-    this.label = label;
-    this.description = `Part des voix exprimés aux candidats ${label}`;
-  }
+function labeledLegend({labels, colors, width, title}) {
+  const elems = zip(labels, colors);
+  const x = scaleBand()
+    .domain(colors)
+    .range([-width / 2, width / 2])
+    .paddingInner(0.2);
 
-  _getValue(d) {
-    const candidat = d.candidats.find(c => this.nuances.includes(c.nuance));
-    return candidat ? candidat.voix / d.exprimes : NaN;
-  }
+  return function legend(elem) {
+    elem.attr('font-size', 10)
+      .attr('font-family', 'sans-serif');
+
+    elem.selectAll('rect').data(colors)
+      .enter()
+      .append('rect')
+      .attr('height', 8)
+      .attr('y', 0)
+      .attr('x', x)
+      .attr('width', x.bandwidth())
+      .attr('fill', d => d);
+
+    elem.selectAll('text').data(elems)
+      .enter()
+      .append('text')
+      .attr('fill', 'black')
+      .attr("text-anchor", "middle")
+      .attr("x", d => (x(d[1]) + x.bandwidth() / 2))
+      .attr("y", 16)
+      .attr("dy", "0.71em")
+      .html(d => d[0]);
+
+    elem.append("text")
+      .attr('fill', 'black')
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "start")
+      .attr("x", -width/2)
+      .attr("y", -6)
+      .text(title);
+  };
 }
 
-export const votesMetrics = nuanceMetrics.map(descr => new VoteMetric(descr));
+function quantileMetric(data, accessor, colors, title) {
+  const values = data.map(accessor);
+  const scale = scaleQuantile()
+    .domain(values)
+    .range(colors);
 
-const abstentionMetric = Object.assign(
-  new QuantileMetric({colors: abstentionMetricParameters.colors}),
-  {
-    label: abstentionMetricParameters.label,
-    _getValue(d) {
-      return (d.inscrits - d.votants) / d.inscrits;
-    },
-    description: "Part des inscrits s'étant abstenus"
+  function metric(d) {
+    const v = accessor(d);
+    return Number.isNaN(v) ? NaNColor : scale(v);
   }
-);
+
+  metric.legend = thresholdLegend({
+    tickValues: scale.quantiles(),
+    extent: extent(values),
+    scale,
+    title
+  });
+
+  return metric;
+}
+
+// métriques générales
+function meilleurCandidatMetrique() {
+  function accessor(d) {
+    return d.candidats[0].nuance;
+  }
+
+  function metric(d) {
+    return nuanceScale(accessor(d));
+  }
+
+  metric.legend = labeledLegend({
+    labels: nuances,
+    colors: nuanceScale.range(),
+    width: 600,
+    title: 'Nuance arrivée en tête dans la circonscription'
+  });
+
+  return metric;
+}
+meilleurCandidatMetrique.label = "Candidat en tête";
+
+
+function abstentionMetrique({data}) {
+  const colors = abstentionMetricParameters.colorFamily[5];
+
+  function accessor(d) {
+    return (d.inscrits - d.votants) / d.inscrits;
+  }
+
+  return quantileMetric(data, accessor, colors, "Niveau de l'abstention en part des inscrits");
+}
+abstentionMetrique.label = abstentionMetricParameters.label;
 
 const nuances = Object.keys(nuanceColors).slice(0, -1);
-
-const premierScale = scaleOrdinal()
+const nuanceScale = scaleOrdinal()
   .domain(nuances)
   .range(nuances.map(n => nuanceColors[n]));
 
-const premierMetric = Object.assign(
-  new Metric({scale: premierScale, dotScale: null}),
-  {
-    label: '1er',
-    description: 'Nuance du candidat avec le plus grand nombre de voix',
-    _getValue(d) {
-      return d.candidats[0].nuance;
-    },
-    legend(elem) {
-      elem.attr('font-size', 10)
-        .attr('font-family', 'sans-serif');
 
-      const x = scaleBand()
-        .domain(nuances)
-        .range([-300, 300])
-        .paddingInner(0.2);
+// métriques spécifiques
 
-      elem.selectAll('rect').data(nuances)
-        .enter()
-        .append('rect')
-        .attr('height', 8)
-        .attr('y', 0)
-        .attr('x', x)
-        .attr('width', x.bandwidth())
-        .attr('fill', d => nuanceColors[d]);
+function partVoixExprimesMetrique({nuance, data}) {
+  const codes = nuance.codes;
+  const colors = nuance.colorFamily[5];
+  const title = `Part des voix exprimés en faveur du candidat ${nuance.label}`
 
-      elem.selectAll('text').data(nuances)
-        .enter()
-        .append('text')
-        .attr('fill', 'black')
-        .attr("text-anchor", "middle")
-        .attr("x", d => (x(d) + x.bandwidth() / 2))
-        .attr("y", 16)
-        .attr("dy", "0.71em")
-        .text(d => d);
-
-      elem.append("text")
-        .attr('fill', 'black')
-        .attr("font-weight", "bold")
-        .attr("text-anchor", "start")
-        .attr("x", -300)
-        .attr("y", -6)
-        .text(this.description);
-
-    }
+  function accessor(d) {
+    const candidat = d.candidats.find(c => codes.includes(c.nuance));
+    return candidat ? candidat.voix / d.exprimes : NaN;
   }
-);
 
-export default [premierMetric, abstentionMetric, ...votesMetrics];
+  return quantileMetric(data, accessor, colors, title);
+}
+partVoixExprimesMetrique.label = "Part voix exprimées";
+
+
+function rangArriveMetrique({nuance}) {
+  const codes = nuance.codes;
+  // inverser pour que 1er corresponde à la plus forte saturation
+  const colors = nuance.colorFamily[4].slice().reverse();
+  const labels = ['1<sup>er</sup>', '2<sup>e</sup>', '3<sup>e</sup>', '4<sup>e</sup>+'];
+  const title = `Position d'arrivée du candidat ${nuance.label}`;
+
+  function accessor(d) {
+    const i = d.candidats.findIndex(c => codes.includes(c.nuance));
+    return i !== -1 ? i : NaN;
+  }
+
+  const scale = scaleThreshold()
+    .range(colors)
+    .domain(range(1, 5));
+
+  function metric(d) {
+    const v = accessor(d);
+    return Number.isNaN(v) ? NaNColor : scale(v);
+  }
+
+  metric.legend = labeledLegend({
+    labels, colors, width: 200, title
+  });
+
+  return metric;
+}
+rangArriveMetrique.label = "Rang candidat";
+
+
+export const generalMetrics = [meilleurCandidatMetrique, abstentionMetrique];
+export const specificMetrics = [partVoixExprimesMetrique, rangArriveMetrique];

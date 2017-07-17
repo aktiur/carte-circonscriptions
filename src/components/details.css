@@ -55,7 +55,7 @@
 
 .details tbody .pourcentage, .details tbody .votes {
     text-align: right;
-    font-family: "Droid Sans Mono", monospace;
+    /*font-family: "Droid Sans Mono", monospace;*/
 }
 
 .details thead .candidat {

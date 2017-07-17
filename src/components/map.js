@@ -13,11 +13,9 @@ import './map.css';
 
 const width = 1000, height = 900;
 const circosStrokeWidth = 0.5;
-const departementsStrokeWidth = 1.5;
+const departementsStrokeWidth = 2;
 
-export default function (topology, metric$) {
-
-  const data = feature(topology, topology.objects.circonscriptions).features;
+export default function (circonscriptions, boundaries, metric$) {
 
   function map (elem) {
     elem.attr('class', 'map');
@@ -32,7 +30,7 @@ export default function (topology, metric$) {
     const circosGroup = zoomableGroup.append('g');
 
     let circos = circosGroup.selectAll('.circonscription')
-      .data(data);
+      .data(circonscriptions);
 
     let legend = null;
 
@@ -53,11 +51,10 @@ export default function (topology, metric$) {
     }
 
     function changeFill(metric) {
-      metric.init(data);
       const t = transition('circonscriptions').duration(1000);
 
       circos.transition(t)
-        .attr('fill', d => metric.getColor(d));
+        .attr('fill', metric);
 
       if(legend) {
         legend.remove();
@@ -69,9 +66,7 @@ export default function (topology, metric$) {
     }
 
     const departements = zoomableGroup.append('path')
-      .datum(mesh(topology, topology.objects.circonscriptions, function(a, b) {
-        return a === b || a.properties.departement !== b.properties.departement;
-      }))
+      .datum(boundaries)
       .attr('fill', 'none')
       .attr('stroke', 'black')
       .attr('stroke-width', departementsStrokeWidth)
@@ -86,7 +81,7 @@ export default function (topology, metric$) {
     }
 
     const mapZoom = zoom()
-      .scaleExtent([1, 10])
+      .scaleExtent([1, maxZoom])
       .translateExtent([[0, 0], [width, height]])
       .on("zoom", zoomed);
 

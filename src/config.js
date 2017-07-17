@@ -22,51 +22,59 @@ export const intFormat = locale.format(',d');
 
 export const NaNColor = 'rgb(200,200,200)';
 
-export const maxZoom = 40;
+export const maxZoom = 12;
 
 export const scrutins = [
-  {label: 'Légis. 1', selector: 'legislatives-1'},
-  {label: 'Légis. 2', selector: 'legislatives-2'},
-  {label: 'Prés. 1', selector: 'presidentielle-1'},
-  {label: 'Prés. 2', selector: 'presidentielle-2'}
+  {label: 'Présidentielle', selector: 'presidentielle'},
+  {label: 'Législatives', selector: 'legislatives'}
 ];
 
-export const nuanceMetrics = [
+export const nuanceDescriptions = [
   {
-    nuances: ['FI'],
+    codes: ['FI'],
     label: 'FI',
-    colors: schemeReds[5]
+    description: "Les candidats identifiés sous l'étiquette France insoumise. Cela inclut des candidats par la suite" +
+    " élus qui n'ont pas rejoints le groupe politique formé par les députés de la France insoumise.",
+    colorFamily: schemeReds
   },
   {
-    nuances: ['REM', 'MDM'],
+    codes: ['REM', 'MDM'],
     label: 'EM',
-    colors: schemeOranges[5],
+    description: "Les candidats se présentant sous les étiquettes La République en Marche et Modem.",
+    colorFamily: schemeOranges,
   },
   {
-    nuances: ['FN'],
+    codes: ['FN'],
     label: 'FN',
-    colors: schemeGreys[5]
+    description: "Les candidats sous présentant sous l'étiquette Front National.",
+    colorFamily: schemeGreys
   },
   {
-    nuances: ['LR', 'UDI'],
+    codes: ['LR', 'UDI'],
     label: 'LR',
-    colors: schemePurples[5]
+    description: "Les candidats se présentant sous les étiquettes Les Républicains et Union des Démocrates" +
+    " Indépendants (UDI).",
+    colorFamily: schemePurples
   },
   {
-    nuances: ['SOC'],
+    codes: ['SOC', 'RDG'],
     label: 'PS',
-    colors: schemeReds[5]
+    description: "Les candidats se présentant sous les étiquettes Parti Socialiste et Radicaux de Gauche.",
+    colorFamily: schemeReds
   },
   {
-    nuances: ['ECO'],
-    label: 'EELV',
-    colors: schemeGreens[5]
+    codes: ['ECO'],
+    label: 'ECO',
+    description: "Les candidats identifiés comme écologistes par le ministère de l'intérieur." +
+    " Cela inclut notamment les candidats d'Europe Ecologie/Les Verts, mais aussi ceux d'autres formations" +
+    " écologistes, le ministère de l'intérieur n'ayant pas choisi de comptabiliser EELV séparément cette année.",
+    colorFamily: schemeGreens
   }
 ];
 
 export const abstentionMetricParameters = {
-  colors: schemeBlues[5],
-  label: 'Abs.'
+  colorFamily: schemeBlues,
+  label: 'Abstention'
 };
 
 export const nuanceColors = {
