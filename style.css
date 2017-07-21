@@ -508,6 +508,7 @@ main {
 
 /* positionning */
 .selector {
+    margin: 5px 0;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
@@ -579,6 +580,16 @@ main {
 
 .details h2 {
     text-align: center;
+    font: 25px/1.6 "Abril Fatface",serif;
+}
+
+.details h3 {
+    margin: 30px 15px 0;
+}
+
+.communes {
+    font-size: 0.8em;
+    margin-left: 15px;
 }
 
 .details table {
@@ -619,7 +630,6 @@ main {
 
 .details tbody .pourcentage, .details tbody .votes {
     text-align: right;
-    /*font-family: "Droid Sans Mono", monospace;*/
 }
 
 .details thead .candidat {
