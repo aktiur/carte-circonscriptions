@@ -22,8 +22,12 @@ export default function (scrutin$, circonscription$) {
       .text('Pas de second tour dans cette circonscription.');
 
     // set up table
-    const table = elem.append('table').attr('class', 'hide');
+    const dataDiv = elem.append('div').attr('class', 'hide');
+    const table = dataDiv.append('table');
     const tbody = setUpTable(table);
+
+    dataDiv.append('h3').text('Liste des communes dans cette circonscription');
+    const municipalities = dataDiv.append('div').attr('class', 'communes');
 
     // set up scale for bars
     const x = scaleLinear().rangeRound([0, maxBarWidth]);
@@ -33,15 +37,15 @@ export default function (scrutin$, circonscription$) {
       .subscribe(showDetails);
 
     function showDetails([scrutin, circonscription]) {
-      title.text(nomCirco(circonscription));
+      title.html(nomCirco(circonscription));
 
       if (circonscription[scrutin] === null) {
-        table.classed('hide', true);
+        dataDiv.classed('hide', true);
         noDataMessage.classed('hide', false);
         return;
       }
 
-      table.classed('hide', false);
+      dataDiv.classed('hide', false);
       noDataMessage.classed('hide', true);
 
       const resultats = circonscription[scrutin];
@@ -59,8 +63,9 @@ export default function (scrutin$, circonscription$) {
       lignesEnter.append('th')
         .text(d => d.nuance)
         .attr('class', 'nuance')
+
         .style('color', d => nuanceColors[d.nuance]);
-      lignesEnter.append('td').text(d => d.label).attr('class', 'candidat');
+      lignesEnter.append('td').html(d => d.label).attr('class', 'candidat');
       lignesEnter.append('td').attr('class', 'votes');
       lignesEnter.append('td').attr('class', 'pourcentage');
       lignesEnter.append('td').append('div').attr('class', 'bar');
@@ -74,6 +79,8 @@ export default function (scrutin$, circonscription$) {
         .style('background-color', d => nuanceColors[d.nuance]);
 
       lignes.exit().remove();
+
+      municipalities.text(circonscription.communes);
     }
   }
 
@@ -82,8 +89,8 @@ export default function (scrutin$, circonscription$) {
 
 function nomCirco(d) {
   const designation = designationDepartements[d.departement];
-  const ordinal = d.circo === 1 ? 'ère' : 'ème';
-  return `${d.circonscription}${ordinal} circonscription ${designation}`;
+  const ordinal = d.circonscription === 1 ? 'ère' : 'ème';
+  return `${d.circonscription}<sup>${ordinal}</sup> circonscription ${designation}`;
 }
 
 function toTitleCase(str) {
@@ -92,19 +99,23 @@ function toTitleCase(str) {
   });
 }
 
+function candidateName(c) {
+  return `<strong>${toTitleCase(c.nom)}</strong>, ${c.prenom}`;
+}
+
 function setUpTable(table) {
-  table.append('caption').text("Scores des candidats en % des exprimés, de l'abstention en % des inscrits");
+  table.append('caption').text("* Scores des candidats en % des exprimés, de l'abstention en % des inscrits");
   const header = table.append('thead').append('tr');
 
   [
     ['nuance', ''],
     ['candidat', 'Candidat'],
     ['votes', 'Voix'],
-    ['pourcentage', '%'],
+    ['pourcentage', '%*'],
     ['bar', '']
   ].map(([c, l]) => {
     header.append('th')
-      .text(l)
+      .html(l)
       .attr('class', c);
   });
 
@@ -119,7 +130,7 @@ function formatData(resultats) {
 
   const data = resultats.candidats.map(c => ({
     id: `${c.nuance}/${c.nom}/${c.prenom}`,
-    label: toTitleCase(c.nom),
+    label: candidateName(c),
     pourcentage: percentFormat(c.voix / resultats.exprimes),
     votes: intFormat(c.voix),
     score: c.voix / resultats.exprimes,

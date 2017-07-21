@@ -197,9 +197,14 @@ def task_joindre_scrutins():
     args = ' '.join(f'"{s}={f}"' for s, f in SCRUTINS_NDJSON.items())
 
     return {
-        'file_dep': list(SCRUTINS_NDJSON.values()),
+        'file_dep': list(SCRUTINS_NDJSON.values()) + ['data/circos_communes.ndjson'],
         'targets': [RESULTS],
-        'actions': [f'python scripts/joindre_scrutins.py {args} > {RESULTS}']
+        'actions': [f"""
+            python scripts/joindre_scrutins.py {args} \
+            |ndjson-join 'd.id' - data/circos_communes.ndjson \
+            |ndjson-map 'd[0].communes = d[1].communes, d[0]' \
+            > {RESULTS}
+        """]
     }
 
 
@@ -215,6 +220,13 @@ def task_results_to_ndjson():
             'actions': [(create_folder, ['data']), f'python scripts/csv_to_ndjson.py {src} > {target}']
         }
 
+
+def task_circo_communes_to_ndjson():
+    return {
+        'file_dep': ['raw/circos_communes.csv'],
+        'targets': ['data/circos_communes.ndjson'],
+        'actions': ["""dsv2json -n %(dependencies)s | ndjson-map 'd.id=d.departement+("00"+d.circonscription).slice(-3),d' > %(targets)s"""]
+    }
 
 def task_copy_index():
     src = Path('index.html')
