@@ -7,11 +7,11 @@ import {geoPath} from 'd3-geo';
 
 import {feature, mesh} from 'topojson';
 
-import {maxZoom} from '../config';
+import {maxZoom, mapCredit} from '../config';
 
 import './map.css';
 
-const width = 1000, height = 900;
+const width = 1000, height = 870;
 const circosStrokeWidth = 0.5;
 const departementsStrokeWidth = 2;
 
@@ -25,6 +25,7 @@ export default function (circonscriptions, boundaries, metric$) {
       .attr('height', height);
 
     setupFilter(svg);
+    addCredit(svg);
 
     const zoomableGroup = svg.append('g');
     const circosGroup = zoomableGroup.append('g');
@@ -41,29 +42,8 @@ export default function (circonscriptions, boundaries, metric$) {
       .attr('d', path)
       .attr('stroke', 'black')
       .attr('stroke-width', circosStrokeWidth)
-      .on('click', clicked)
+      .on('click', selected)
       .merge(circos);
-
-    function clicked(d, i, nodes) {
-      selectAll('.selected').classed('selected', false);
-      select(this).classed('selected', true).raise();
-      circonscription$.next(d.properties);
-    }
-
-    function changeFill(metric) {
-      const t = transition('circonscriptions').duration(1000);
-
-      circos.transition(t)
-        .attr('fill', metric);
-
-      if(legend) {
-        legend.remove();
-      }
-
-      legend = svg.append('g')
-        .attr('transform', `translate(${width/2},850)`)
-        .call(metric.legend);
-    }
 
     const departements = zoomableGroup.append('path')
       .datum(boundaries)
@@ -72,13 +52,7 @@ export default function (circonscriptions, boundaries, metric$) {
       .attr('stroke-width', departementsStrokeWidth)
       .attr('d', path);
 
-    metric$.subscribe(changeFill);
-
-    function zoomed() {
-      zoomableGroup.attr('transform', event.transform);
-      circos.attr('stroke-width', circosStrokeWidth / event.transform.k);
-      departements.attr('stroke-width', departementsStrokeWidth / event.transform.k);
-    }
+    metric$.subscribe(metricChanged);
 
     const mapZoom = zoom()
       .scaleExtent([1, maxZoom])
@@ -91,7 +65,41 @@ export default function (circonscriptions, boundaries, metric$) {
 
     elem.append('button')
       .attr('class', 'reset-button fa fa-refresh')
-      .on('click', () => svg.transition(t).call(mapZoom.transform, zoomIdentity));
+      .on('click', resetZoom);
+
+
+    function metricChanged(metric) {
+      const t = transition('circonscriptions').duration(1000);
+
+      circos.transition(t)
+        .attr('fill', metric);
+
+      if(legend) {
+        legend.remove();
+      }
+
+      legend = svg.append('g')
+        .attr('transform', `translate(${width/2},${height-50})`)
+        .call(metric.legend);
+    }
+
+    function selected(d, i, nodes) {
+      selectAll('.selected').classed('selected', false);
+      select(this).classed('selected', true).raise();
+      circonscription$.next(d.properties);
+    }
+
+    function zoomed() {
+      zoomableGroup.attr('transform', event.transform);
+      circos.attr('stroke-width', circosStrokeWidth / event.transform.k);
+      departements.attr('stroke-width', departementsStrokeWidth / event.transform.k);
+    }
+
+    function resetZoom() {
+      svg.transition(t).call(mapZoom.transform, zoomIdentity);
+    }
+
+
   }
 
   const circonscription$ = map.circonscription$ = new ReplaySubject(1);
@@ -106,12 +114,6 @@ const filterContent = `
 <!-- Use a gaussian blur to create the soft blurriness of the glow -->
 <feGaussianBlur in="thicken" stdDeviation="7" result="blurred" />
 
-<!-- Change the colour -->
-<!--<feFlood flood-color="rgb(200,200,200)" result="glowColor" />-->
-
-<!-- Color in the glows -->
-<!--<feComposite in="glowColor" in2="blurred" operator="in" result="softGlow_colored" />-->
-
 <!--	Layer the effects together -->
 <feMerge>
   <feMergeNode in="blurred"/>
@@ -124,9 +126,19 @@ function setupFilter(svg) {
   const defs = svg.append('defs');
   const filter = defs.append('filter')
     .attr('id', 'glowF')
-    .attr('height', '200')
-    .attr('width', '200')
-    .attr('x', '-80')
-    .attr('y', '-80')
+    .attr('filterUnits', 'userSpaceOnUse')
+    .attr('height', height)
+    .attr('width', width)
+    .attr('x', 0)
+    .attr('y', 0)
     .html(filterContent);
+}
+
+function addCredit(svg) {
+  svg.append('text')
+    .attr('x', width-5)
+    .attr('y', height-5)
+    .attr('text-anchor', 'end')
+    .attr('font-size', 10)
+    .html(mapCredit);
 }

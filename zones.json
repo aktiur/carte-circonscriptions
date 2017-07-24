@@ -1,49 +1,49 @@
 {
     "hexagone": {
-        "extent": [[60, 0], [820, 900]]
+        "extent": [[60, 0], [820, 840]]
     },
     "corse": {
         "departements": ["2A", "2B"],
-        "extent": [[800, 700], [970, 870]]
+        "extent": [[800, 660], [970, 830]]
     },
     "guadeloupe": {
         "departements": ["ZA"],
-        "extent": [[60, 400], [200, 550]]
+        "extent": [[60, 380], [200, 530]]
     },
     "martinique": {
         "departements": ["ZB"],
-        "extent": [[60, 550], [140, 700]]
+        "extent": [[60, 530], [140, 680]]
     },
     "guyane": {
         "departements": ["ZC"],
-        "extent": [[60, 700], [170, 870]]
+        "extent": [[60, 680], [170, 850]]
     },
     "reunion": {
         "departements": ["ZD"],
-        "extent": [[820, 500], [950, 620]]
+        "extent": [[820, 460], [950, 580]]
     },
     "mayotte": {
         "departements": ["ZM"],
-        "extent": [[800, 340], [1000, 400]]
+        "extent": [[800, 320], [1000, 380]]
     },
     "nouvelle-caledonie": {
         "departements": ["ZN"],
-        "extent": [[600, 40], [800, 170]]
+        "extent": [[600, 20], [800, 150]]
     },
     "polynesie-francaise": {
         "departements": ["ZP"],
-        "extent": [[830, 20], [950, 200]]
+        "extent": [[830, 0], [950, 180]]
     },
     "saint-pierre-et-miquelon": {
         "departements": ["ZS"],
-        "extent": [[40, 60], [120, 140]]
+        "extent": [[60, 40], [140, 120]]
     },
     "wallis-et-futuna": {
         "departements": ["ZW"],
-        "extent": [[850, 220], [950, 320]]
+        "extent": [[850, 200], [950, 300]]
     },
     "saint-martin-saint-barthelemy": {
         "departements": ["ZX"],
-        "extent": [[130, 60], [300, 140]]
+        "extent": [[160, 40], [330, 120]]
     }
 }

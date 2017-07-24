@@ -5,3 +5,7 @@
 main {
     display: flex;
 }
+
+.sidebar {
+    margin: 0 15px;
+}

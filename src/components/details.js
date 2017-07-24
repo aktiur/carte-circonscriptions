@@ -23,6 +23,8 @@ export default function (scrutin$, circonscription$) {
 
     // set up table
     const dataDiv = elem.append('div').attr('class', 'hide');
+
+    const scrutinTitle = dataDiv.append('h3');
     const table = dataDiv.append('table');
     const tbody = setUpTable(table);
 
@@ -38,6 +40,7 @@ export default function (scrutin$, circonscription$) {
 
     function showDetails([scrutin, circonscription]) {
       title.html(nomCirco(circonscription));
+      scrutinTitle.html(`Résultats pour le ${scrutin.label}`);
 
       if (circonscription[scrutin] === null) {
         dataDiv.classed('hide', true);
@@ -48,7 +51,7 @@ export default function (scrutin$, circonscription$) {
       dataDiv.classed('hide', false);
       noDataMessage.classed('hide', true);
 
-      const resultats = circonscription[scrutin];
+      const resultats = circonscription[scrutin.selector];
       const data = formatData(resultats);
 
       x.domain([0, max(data, d => d.score)]);
@@ -94,9 +97,13 @@ function nomCirco(d) {
 }
 
 function toTitleCase(str) {
-  return str.replace(/\w(\S|[-])*/g, function (txt) {
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  const candidate =  str.replace(/[a-zéàùèçâêîôûäëïöü]+/gi, function (txt) {
+    return ['d', 'de', 'du'].includes(txt.toLowerCase()) ?
+      txt.toLowerCase() :
+      txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
   });
+
+  return candidate.charAt(0).toUpperCase() + candidate.substr(1);
 }
 
 function candidateName(c) {

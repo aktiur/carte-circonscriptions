@@ -16,6 +16,8 @@ export const locale = formatLocale({
   percent: '\u202f%'
 });
 
+export const mapCredit = "Contours des circonscriptions par l'Atelier de cartographie de Sciences Po et Toxicode";
+
 export const percentFormat = locale.format('.1%');
 export const simplePercentFormat = locale.format('.0%');
 export const intFormat = locale.format(',d');
@@ -24,51 +26,69 @@ export const NaNColor = 'rgb(200,200,200)';
 
 export const maxZoom = 12;
 
-export const scrutins = [
-  {label: 'Présidentielle', selector: 'presidentielle'},
-  {label: 'Législatives', selector: 'legislatives'}
+export const elections = [
+  {label: 'Présidentielle', selector: 'presidentielle', qualifier: "de l'élection présidentielle"},
+  {label: 'Législatives', selector: 'legislatives', qualifier: "des élections législatives"}
+];
+
+export const tours = [
+  {label: '1<sup>er</sup> tour', i: 1},
+  {label: '2<sup>e</sup> tour', i: 2}
 ];
 
 export const nuanceDescriptions = [
   {
-    codes: ['FI'],
-    label: 'FI',
-    description: "Les candidats identifiés sous l'étiquette France insoumise. Cela inclut des candidats par la suite" +
-    " élus qui n'ont pas rejoints le groupe politique formé par les députés de la France insoumise.",
+    codes: ['COM'],
+    label: 'COM',
+    qualifier: ['communiste', 'communistes'],
+    description: "Cela regroupe les candidats présentés par le Parti Communiste Français.",
     colorFamily: schemeReds
   },
   {
-    codes: ['REM', 'MDM'],
-    label: 'EM',
-    description: "Les candidats se présentant sous les étiquettes La République en Marche et Modem.",
-    colorFamily: schemeOranges,
-  },
-  {
-    codes: ['FN'],
-    label: 'FN',
-    description: "Les candidats sous présentant sous l'étiquette Front National.",
-    colorFamily: schemeGreys
-  },
-  {
-    codes: ['LR', 'UDI'],
-    label: 'LR',
-    description: "Les candidats se présentant sous les étiquettes Les Républicains et Union des Démocrates" +
-    " Indépendants (UDI).",
-    colorFamily: schemePurples
-  },
-  {
-    codes: ['SOC', 'RDG'],
-    label: 'PS',
-    description: "Les candidats se présentant sous les étiquettes Parti Socialiste et Radicaux de Gauche.",
+    codes: ['FI'],
+    label: 'FI',
+    qualifier: 'de la France insoumise',
+    description: "Cela regroupe les candidats investis par la France insoumise. Cela inclut des candidats par" +
+    "la suite élus qui n'ont pas rejoints le groupe politique formé par les députés de la France insoumise.",
     colorFamily: schemeReds
   },
   {
     codes: ['ECO'],
     label: 'ECO',
-    description: "Les candidats identifiés comme écologistes par le ministère de l'intérieur." +
+    qualifier: ['écologiste', 'écologistes'],
+    description: "Il s'agit des candidats identifiés comme écologistes par le ministère de l'intérieur." +
     " Cela inclut notamment les candidats d'Europe Ecologie/Les Verts, mais aussi ceux d'autres formations" +
     " écologistes, le ministère de l'intérieur n'ayant pas choisi de comptabiliser EELV séparément cette année.",
     colorFamily: schemeGreens
+  },
+  {
+    codes: ['SOC', 'RDG'],
+    label: 'PS',
+    qualifier: ['socialiste ou radical de gauche', 'socialistes et radicaux de gauche'],
+    description: "Cela regroupe les candidats se présentant sous les étiquettes Parti Socialiste et Radicaux de Gauche.",
+    colorFamily: schemeReds
+  },
+  {
+    codes: ['REM', 'MDM'],
+    label: 'EM',
+    qualifier: 'En Marche! ou MoDem',
+    description: "Cela regroupe les candidats se présentant sous les étiquettes La République en Marche et Modem.",
+    colorFamily: schemeOranges,
+  },
+  {
+    codes: ['LR', 'UDI'],
+    label: 'LR',
+    qualifier: ['républicain ou UDI', 'républicains et UDI'],
+    description: "Cela regroupe les candidats se présentant sous les étiquettes Les Républicains et Union des Démocrates" +
+    " Indépendants (UDI).",
+    colorFamily: schemePurples
+  },
+  {
+    codes: ['FN'],
+    label: 'FN',
+    qualifier: 'du Front National',
+    description: "Il s'agit des candidats investis par le Front National.",
+    colorFamily: schemeGreys
   }
 ];
 

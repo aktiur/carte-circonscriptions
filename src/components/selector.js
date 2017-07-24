@@ -5,7 +5,7 @@ import 'rxjs/add/observable/combineLatest';
 
 import './selector.css';
 import {generalMetrics, specificMetrics} from '../metrics';
-import {scrutins, nuanceDescriptions, NaNColor} from '../config';
+import {elections, tours, nuanceDescriptions, NaNColor} from '../config';
 
 export default function (circonscriptions) {
 
@@ -15,17 +15,17 @@ export default function (circonscriptions) {
     const scrutinSelector = elem.append('div').attr('class', 'scrutins group');
 
     scrutinSelector.append('h3').text('Choix du scrutin');
-    let scrutinGroup = scrutinSelector.append('div').selectAll('.scrutin').data(scrutins)
+    let scrutinGroup = scrutinSelector.append('div').selectAll('.scrutin').data(elections)
       .enter()
       .append('div')
       .attr('class', 'subgroup');
 
     scrutinGroup.append('h4').text(d => d.label);
 
-    let tourOptions = scrutinGroup.append('div').selectAll('.tour').data((d, i) => [
-      {label: '1<sup>er</sup> tour', selector: d.selector + '-1', n: i},
-      {label: '2<sup>e</sup> tour', selector: d.selector + '-2'}
-    ]).enter()
+    let tourOptions = scrutinGroup.append('div')
+      .selectAll('.tour')
+      .data(getScrutinDescriptor(tours))
+      .enter()
       .append('div')
       .attr('class', 'option tour');
 
@@ -33,14 +33,14 @@ export default function (circonscriptions) {
       .call(appendRadio({
         'name': 'scrutin',
         'id': (d, i) => `id-${d.selector}`,
-        'checked': (d, i) => d.n === 0 && i === 0,
-        'onClick': d => scrutin$.next(d.selector)
+        'checked': (d, i) => d._n === 0 && i === 0,
+        'onClick': d => scrutin$.next(d)
       }));
 
     tourOptions
       .append('label')
       .attr('for', (d, i) => `id-${d.selector}`)
-      .html(d => d.label);
+      .html(d => d.buttonLabel);
 
     const metricSelector = elem.append('div').attr('class', 'metric group');
     metricSelector.append('h3').text("Choix de l'indicateur");
@@ -111,7 +111,7 @@ export default function (circonscriptions) {
   const metric$ = selector.metric$ = Observable.combineLatest(scrutin$, nuance$, metricConstructor$)
     .map(instantiateMetric(circonscriptions));
 
-  scrutin$.next('presidentielle-1');
+  scrutin$.next(combineScrutin(elections[0], tours[0]));
   nuance$.next(nuanceDescriptions[0]);
   metricConstructor$.next(generalMetrics[0]);
 
@@ -132,12 +132,25 @@ function appendRadio({name, id, checked, onClick}) {
 
 function instantiateMetric(circonscriptions) {
   return function ([scrutin, nuance, metric]) {
+    const selector = scrutin.selector;
+    console.log(scrutin);
     const m = metric({
-      data: circonscriptions.map(d => d.properties[scrutin]).filter(d => d !== null),
+      data: circonscriptions.map(d => d.properties[selector]).filter(d => d !== null),
       nuance,
     });
-    const a =  d => d.properties[scrutin] !== null ? m(d.properties[scrutin]) : NaNColor;
-    a.legend = m.legend;
-    return a;
+    return Object.assign(d => d.properties[selector] !== null ? m(d.properties[selector]) : NaNColor, m);
   };
+}
+
+function getScrutinDescriptor(tours) {
+  return function (election, i) {
+    return tours.map((tour, j) => Object.assign({
+      buttonLabel: tour.label,
+      selected: i === 0 && j === 0
+    }, combineScrutin(election, tour)));
+  };
+}
+
+function combineScrutin(election, tour) {
+  return {selector: `${election.selector}-${tour.i}`, label: `${tour.label} ${election.qualifier}`};
 }
