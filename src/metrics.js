@@ -65,7 +65,7 @@ function meilleurCandidatMetrique() {
     title: 'Nuance arrivée en tête dans la circonscription'
   });
 
-  metric.title = "Premiers arrivés";
+  metric.title = "Candidats en tête";
 
   return metric;
 }
