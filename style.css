@@ -432,14 +432,14 @@ html, body {
 }
 #app {
     min-height: 100%;
-}
-
-main {
     display: flex;
 }
-/* generic styling options */
+
+.sidebar {
+    margin-top: 38px;
+}/* generic styling options */
 .selector .group {
-    margin: 0 40px;
+    margin: 15px;
 }
 
 .selector .subgroup + .subgroup {
@@ -447,15 +447,14 @@ main {
 }
 
 .selector h3 {
-    font: 40px/1.1 'Abril Fatface',serif;
+    font: 30px/1.1 'Abril Fatface',serif;
     margin: 0;
 }
 
 .selector h4 {
-    font-weight: 600;
+    font-weight: 700;
     font-style: italic;
     margin: 0 0 0 0;
-    padding-top: 4px;
     font-size: 20px;
     line-height: 1.1;
 }
@@ -509,10 +508,6 @@ main {
 /* positionning */
 .selector {
     margin: 5px 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    min-height: 60px;
 }
 
 .selector > div > div {
@@ -538,7 +533,6 @@ main {
 .map {
     position: relative;
     width: 1000px;
-    height: 900px;
     padding: 0;
 }
 
@@ -568,6 +562,7 @@ main {
     padding: 0;
     background-color: rgba(255,255,255,1);
     position: relative;
+    margin: 0 15px;
 }
 
 .details.hide {
@@ -579,25 +574,27 @@ main {
 }
 
 .details h2 {
-    text-align: center;
-    font: 25px/1.6 "Abril Fatface",serif;
+    font: 30px/1.6 "Abril Fatface",serif;
+    margin: 15px 0 0;
 }
 
 .details h3 {
-    margin: 30px 15px 0;
+    margin: 0;
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 700;
 }
 
 .communes {
     font-size: 0.8em;
-    margin-left: 15px;
 }
 
 .details table {
     border-spacing: 0;
     border-collapse: collapse;
-    margin: auto;
+    margin: 15px auto;
     table-layout: fixed;
-    width: 90%;
+    width: 100%;
 }
 
 .details .hide {
@@ -606,6 +603,7 @@ main {
 
 .details caption {
     caption-side: bottom;
+    font-weight: 700;
 }
 
 .details thead tr th {
