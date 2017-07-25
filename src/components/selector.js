@@ -33,7 +33,7 @@ export default function (circonscriptions) {
       .call(appendRadio({
         'name': 'scrutin',
         'id': (d, i) => `id-${d.selector}`,
-        'checked': (d, i) => d._n === 0 && i === 0,
+        'checked': d => d.selected,
         'onClick': d => scrutin$.next(d)
       }));
 

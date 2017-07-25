@@ -4,7 +4,6 @@ import './dashboard.css';
 import selector from './selector';
 import map from './map';
 import details from './details';
-import metricDescription from './metricDescription';
 
 export default function (topology) {
   function dashboard(root) {
@@ -17,20 +16,14 @@ export default function (topology) {
     const s = selector(circonscriptions);
     const m = map(circonscriptions, departementsBoundaries, s.metric$);
     const d = details(s.scrutin$, m.circonscription$);
-    const md = metricDescription(s.metric$);
 
-    root.append('div')
-      .call(s);
-
-    const content = root.append('main');
-
-    content.append('div')
+    root.append('main')
       .call(m);
 
-    const sidebar = content.append('div').attr('class', 'sidebar')
+    const sidebar = root.append('div').attr('class', 'sidebar');
 
     sidebar.append('div')
-      .call(md);
+      .call(s);
 
     sidebar.append('div')
       .call(d);

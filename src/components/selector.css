@@ -1,6 +1,6 @@
 /* generic styling options */
 .selector .group {
-    margin: 0 40px;
+    margin: 15px;
 }
 
 .selector .subgroup + .subgroup {
@@ -13,10 +13,9 @@
 }
 
 .selector h4 {
-    font-weight: 600;
+    font-weight: 700;
     font-style: italic;
     margin: 0 0 0 0;
-    padding-top: 4px;
     font-size: 20px;
     line-height: 1.1;
 }
@@ -70,10 +69,6 @@
 /* positionning */
 .selector {
     margin: 5px 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    min-height: 60px;
 }
 
 .selector > div > div {

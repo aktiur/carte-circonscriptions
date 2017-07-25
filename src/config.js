@@ -64,14 +64,14 @@ export const nuanceDescriptions = [
   {
     codes: ['SOC', 'RDG'],
     label: 'PS',
-    qualifier: ['socialiste ou radical de gauche', 'socialistes et radicaux de gauche'],
+    qualifier: ['socialiste ou radical de gauche', 'PS/RDG'],
     description: "Cela regroupe les candidats se présentant sous les étiquettes Parti Socialiste et Radicaux de Gauche.",
     colorFamily: schemeReds
   },
   {
     codes: ['REM', 'MDM'],
     label: 'EM',
-    qualifier: 'En Marche! ou MoDem',
+    qualifier: 'En Marche!/MoDem',
     description: "Cela regroupe les candidats se présentant sous les étiquettes La République en Marche et Modem.",
     colorFamily: schemeOranges,
   },

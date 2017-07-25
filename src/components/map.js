@@ -11,7 +11,7 @@ import {maxZoom, mapCredit} from '../config';
 
 import './map.css';
 
-const width = 1000, height = 870;
+const width = 1000, height = 870, titleHeight = 100;
 const circosStrokeWidth = 0.5;
 const departementsStrokeWidth = 2;
 
@@ -22,12 +22,22 @@ export default function (circonscriptions, boundaries, metric$) {
 
     const svg = elem.append('svg')
       .attr('width', width)
-      .attr('height', height);
+      .attr('height', titleHeight+height);
 
     setupFilter(svg);
+    const mapArea = svg.append('g')
+      .attr('transform', `translate(0,${titleHeight})`);
+
+    const title = svg.append('text')
+      .attr('x', width/2)
+      .attr('y', 80)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', 48)
+      .attr('font-family', 'Abril Fatface');
+
     addCredit(svg);
 
-    const zoomableGroup = svg.append('g');
+    const zoomableGroup = mapArea.append('g');
     const circosGroup = zoomableGroup.append('g');
 
     let circos = circosGroup.selectAll('.circonscription')
@@ -52,23 +62,23 @@ export default function (circonscriptions, boundaries, metric$) {
       .attr('stroke-width', departementsStrokeWidth)
       .attr('d', path);
 
-    metric$.subscribe(metricChanged);
-
     const mapZoom = zoom()
       .scaleExtent([1, maxZoom])
-      .translateExtent([[0, 0], [width, height]])
+      .translateExtent([[0, 0], [width, titleHeight+height]])
       .on("zoom", zoomed);
 
     svg.call(mapZoom);
-
-    const t = transition().duration(250);
 
     elem.append('button')
       .attr('class', 'reset-button fa fa-refresh')
       .on('click', resetZoom);
 
 
+    metric$.subscribe(metricChanged);
+
     function metricChanged(metric) {
+      title.text(metric.title);
+
       const t = transition('circonscriptions').duration(1000);
 
       circos.transition(t)
@@ -79,7 +89,7 @@ export default function (circonscriptions, boundaries, metric$) {
       }
 
       legend = svg.append('g')
-        .attr('transform', `translate(${width/2},${height-50})`)
+        .attr('transform', `translate(${width/2},${titleHeight+height-50})`)
         .call(metric.legend);
     }
 
@@ -96,9 +106,9 @@ export default function (circonscriptions, boundaries, metric$) {
     }
 
     function resetZoom() {
+      const t = transition().duration(250);
       svg.transition(t).call(mapZoom.transform, zoomIdentity);
     }
-
 
   }
 
@@ -137,7 +147,7 @@ function setupFilter(svg) {
 function addCredit(svg) {
   svg.append('text')
     .attr('x', width-5)
-    .attr('y', height-5)
+    .attr('y', titleHeight+height-5)
     .attr('text-anchor', 'end')
     .attr('font-size', 10)
     .html(mapCredit);

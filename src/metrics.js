@@ -17,7 +17,7 @@ import {
  */
 
 
-function quantileMetric(data, accessor, colors, title) {
+function quantileMetric(data, accessor, colors, legendTitle) {
   const values = data.map(accessor).filter(v => !Number.isNaN(v));
 
   if (values.length === 0) {
@@ -25,7 +25,7 @@ function quantileMetric(data, accessor, colors, title) {
       return NaNColor;
     };
 
-    metric.legend = noDataLegend({title});
+    metric.legend = noDataLegend({title: legendTitle});
     return metric;
   }
 
@@ -42,7 +42,7 @@ function quantileMetric(data, accessor, colors, title) {
     tickValues: scale.quantiles(),
     extent: extent(values),
     scale,
-    title
+    title: legendTitle
   });
 
   return metric;
@@ -65,7 +65,7 @@ function meilleurCandidatMetrique() {
     title: 'Nuance arrivée en tête dans la circonscription'
   });
 
-  metric.description = "Cet indicateur indique la nuance arrivée en tête dans chacune des circonscriptions.";
+  metric.title = "Premiers arrivés";
 
   return metric;
 }
@@ -81,8 +81,7 @@ function abstentionMetrique({data}) {
 
   const metric =  quantileMetric(data, accessor, colors, "Niveau de l'abstention en part des inscrits");
 
-  metric.description = "Montre le niveau de l'abstention, exprimée par la part des inscrits n'ayant pas pris part" +
-  " au scrutin.";
+  metric.title = "Niveau de l'abstention";
 
   return metric;
 }
@@ -101,17 +100,16 @@ function partVoixExprimesMetrique({nuance, data}) {
   const singleQualifier = Array.isArray(nuance.qualifier) ? nuance.qualifier[0] : nuance.qualifier;
   const pluralQualifier = Array.isArray(nuance.qualifier) ? nuance.qualifier[1] : nuance.qualifier;
 
-  const title = `Part des voix exprimés en faveur du meilleur candidat ${singleQualifier}`;
+  const legendTitle = `Part des voix exprimés en faveur du meilleur candidat ${singleQualifier}`;
 
   function accessor(d) {
     const candidat = d.candidats.find(c => codes.includes(c.nuance));
     return candidat ? candidat.voix / d.exprimes : NaN;
   }
 
-  const metric =  quantileMetric(data, accessor, colors, title);
+  const metric =  quantileMetric(data, accessor, colors, legendTitle);
 
-  metric.description = `Indique la part des voix exprimés pour les candidats ${pluralQualifier}.
-  ${nuance.description}`;
+  metric.title = `Niveau des candidats ${pluralQualifier}`;
 
   return metric;
 }
@@ -127,7 +125,7 @@ function rangArriveMetrique({nuance}) {
   const singleQualifier = Array.isArray(nuance.qualifier) ? nuance.qualifier[0] : nuance.qualifier;
   const pluralQualifier = Array.isArray(nuance.qualifier) ? nuance.qualifier[1] : nuance.qualifier;
 
-  const title = `Position d'arrivée du meilleur candidat ${singleQualifier}`;
+  const legendTitle = `Position d'arrivée du meilleur candidat ${singleQualifier}`;
 
   function accessor(d) {
     const i = d.candidats.findIndex(c => codes.includes(c.nuance));
@@ -144,11 +142,10 @@ function rangArriveMetrique({nuance}) {
   }
 
   metric.legend = labeledLegend({
-    labels, colors, width: 200, title
+    labels, colors, width: 200, legendTitle
   });
 
-  metric.description = `Indique la position d'arrivée des candidats ${pluralQualifier}.
-  ${nuance.description}`;
+  metric.title = `Rang des candidats ${pluralQualifier}`;
 
   return metric;
 }

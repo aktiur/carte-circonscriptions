@@ -1,11 +1,8 @@
 #app {
     min-height: 100%;
-}
-
-main {
     display: flex;
 }
 
 .sidebar {
-    margin: 0 15px;
+    margin-top: 38px;
 }
