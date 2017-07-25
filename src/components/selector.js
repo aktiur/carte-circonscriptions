@@ -5,7 +5,7 @@ import 'rxjs/add/observable/combineLatest';
 
 import './selector.css';
 import {generalMetrics, specificMetrics} from '../metrics';
-import {elections, tours, nuanceDescriptions, NaNColor} from '../config';
+import {elections, tours, nuanceDescriptions, nuanceParDefaut, NaNColor} from '../config';
 
 export default function (circonscriptions) {
 
@@ -78,7 +78,7 @@ export default function (circonscriptions) {
       .call(appendRadio({
         name: 'nuance',
         id: (d, i) => `nuance-${i}`,
-        checked: (d, i) => i === 0,
+        checked: (d, i) => i === nuanceParDefaut,
         onClick: d => nuance$.next(d)
       }));
 
@@ -112,7 +112,7 @@ export default function (circonscriptions) {
     .map(instantiateMetric(circonscriptions));
 
   scrutin$.next(combineScrutin(elections[0], tours[0]));
-  nuance$.next(nuanceDescriptions[0]);
+  nuance$.next(nuanceDescriptions[nuanceParDefaut]);
   metricConstructor$.next(generalMetrics[0]);
 
   return selector;

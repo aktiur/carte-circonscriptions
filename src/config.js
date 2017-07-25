@@ -92,6 +92,8 @@ export const nuanceDescriptions = [
   }
 ];
 
+export const nuanceParDefaut = nuanceDescriptions.findIndex(n => n.label === 'FI');
+
 export const abstentionMetricParameters = {
   colorFamily: schemeBlues,
   label: 'Abstention'
