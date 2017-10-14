@@ -433,10 +433,14 @@ html, body {
 #app {
     min-height: 100%;
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
 }
 
 .sidebar {
     margin-top: 38px;
+    max-width: 1000px;
 }/* generic styling options */
 .selector .group {
     margin: 15px;
@@ -508,6 +512,7 @@ html, body {
 /* positionning */
 .selector {
     margin: 5px 0;
+    display: flex;
 }
 
 .selector > div > div {
