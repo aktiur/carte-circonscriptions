@@ -17,13 +17,13 @@ export default function (topology) {
     const m = map(circonscriptions, departementsBoundaries, s.metric$);
     const d = details(s.scrutin$, m.circonscription$);
 
+    root.append('nav')
+        .call(s);
+
     root.append('main')
       .call(m);
 
     const sidebar = root.append('div').attr('class', 'sidebar');
-
-    sidebar.append('div')
-      .call(s);
 
     sidebar.append('div')
       .call(d);

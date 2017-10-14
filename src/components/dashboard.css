@@ -1,8 +1,12 @@
 #app {
     min-height: 100%;
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
 }
 
 .sidebar {
     margin-top: 38px;
+    max-width: 1000px;
 }

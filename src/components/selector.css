@@ -69,6 +69,7 @@
 /* positionning */
 .selector {
     margin: 5px 0;
+    display: flex;
 }
 
 .selector > div > div {

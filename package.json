@@ -1,11 +1,12 @@
 {
-  "name": "melencarte",
+  "name": "carte-circonscriptions",
   "version": "1.0.0",
   "description": "",
   "main": "src/main.js",
   "dependencies": {
     "d3-array": "^1.2.0",
     "d3-axis": "^1.0.8",
+    "d3-format": "^1.2.0",
     "d3-geo": "^1.6.3",
     "d3-request": "^1.0.5",
     "d3-scale": "^1.0.5",
